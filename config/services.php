@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'enabled' => filter_var(env('WHATSAPP_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN),
+        'phone' => env('WHATSAPP_PHONE'),
+        'notification_enabled' => filter_var(env('WHATSAPP_NOTIFICATION_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN),
+    ],
+
 ];

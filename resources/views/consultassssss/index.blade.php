@@ -108,9 +108,26 @@
     </div>
 </div>
 
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ route('solicitudes.seguimiento') }}" class="btn btn-lg btn-outline-light" style="border-width: 2px;">
+                    <i class="fas fa-redo me-2"></i>Realizar nueva gestión
+                </a>
+                <a href="{{ route('solicitudes.formulario') }}" class="btn btn-lg btn-success">
+                    <i class="fas fa-plus me-2"></i>Nueva solicitud
+                </a>
+                <a href="/" class="btn btn-lg btn-outline-light" style="border-width: 2px;">
+                    <i class="fas fa-home me-2"></i>Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="footer-public">
     <p>© {{ date('Y') }} Municipalidad Distrital de Andrés Avelino Cáceres Dorregaray</p>
-    <p>¿Eres funcionario? <a href="{{ route('login') }}" style="color:#4d9fff">Inicia sesión aquí</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

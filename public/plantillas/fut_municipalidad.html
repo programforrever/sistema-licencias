@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUT – Municipalidad Distrital Andrés Avelino Cáceres Dorregaray</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #d6d3cc;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Barra superior de acción ── */
+  .toolbar {
+    width: 100%;
+    max-width: 780px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .btn-pdf {
+    background: #1a6b23;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+  .btn-pdf:hover { background: #155720; }
+  .btn-pdf svg { width: 16px; height: 16px; fill: #fff; }
+
+  .btn-clear {
+    background: #fff;
+    color: #555;
+    border: 1.5px solid #ccc;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-clear:hover { background: #f2f2f2; }
+
+  /* ── Hoja del documento ── */
+  #documento {
+    width: 100%;
+    max-width: 780px;
+    background: #fff;
+    padding: 28px 32px 32px;
+    border: 1px solid #bbb;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+
+  /* ── Cabecera ── */
+  .header-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .header-logo-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .logo-placeholder {
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+  }
+
+  .header-texts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #4a9e35;
+    padding: 8px 14px;
+    flex: 1;
+  }
+
+  .header-texts .inst-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.35;
+  }
+
+  .header-texts .doc-type {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+
+  .header-qr {
+    width: 88px;
+    height: 88px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #aaa;
+    text-align: center;
+    padding: 4px;
+  }
+
+  /* ── Etiqueta FUT ── */
+  .fut-label {
+    border: 2px solid #222;
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Destinatario ── */
+  .destinatario {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Solicito ── */
+  .solicito-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid #222;
+    padding: 5px 10px;
+    margin-bottom: 14px;
+  }
+
+  .solicito-row label {
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .solicito-row input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+  }
+
+  /* ── Secciones ── */
+  .section-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: underline;
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Tabla de datos ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 11px;
+  }
+
+  .data-table tr td {
+    border: 1px solid #555;
+    padding: 0;
+  }
+
+  .data-table tr td.cell-label {
+    padding: 4px 8px;
+    font-weight: 600;
+    white-space: nowrap;
+    width: 46%;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    background: #f9f9f9;
+    vertical-align: middle;
+  }
+
+  .data-table tr td.cell-input {
+    padding: 2px 4px;
+  }
+
+  .data-table tr td.cell-input input {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+  }
+
+  /* ── Área de detalle ── */
+  .detalle-wrap {
+    margin-bottom: 14px;
+  }
+
+  .detalle-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .detalle-lines .line-row {
+    display: flex;
+    align-items: flex-end;
+    border-bottom: 1px dotted #888;
+    min-height: 26px;
+    padding: 2px 4px;
+  }
+
+  .detalle-lines .line-row input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+    padding: 2px 4px;
+  }
+
+  /* ── Documentos adjuntos ── */
+  .docs-section { margin-bottom: 14px; }
+
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 20px;
+  }
+
+  .doc-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 3px 0;
+    border-bottom: 1px dotted #aaa;
+  }
+
+  .doc-item .doc-num {
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 20px;
+  }
+
+  .doc-item .doc-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #555;
+    border-radius: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a6b23;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .doc-item .doc-check.checked { background: #e8f5e9; }
+
+  .doc-item .doc-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .doc-item input.doc-text {
+    flex: 1;
+    border: none;
+    border-bottom: 1px dotted #999;
+    outline: none;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+    min-width: 0;
+  }
+
+  /* ── Nota ── */
+  .nota {
+    font-size: 10.5px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .nota strong { font-weight: 700; }
+
+  /* ── Lugar y fecha ── */
+  .lugar-fecha {
+    font-size: 11px;
+    text-align: center;
+    margin-bottom: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .lugar-fecha input {
+    border: none;
+    border-bottom: 1px solid #555;
+    outline: none;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    background: transparent;
+    min-width: 80px;
+    padding: 1px 4px;
+  }
+
+  /* ── Firma ── */
+  .firma-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 6px;
+    padding-right: 20px;
+  }
+
+  .firma-box {
+    text-align: center;
+    width: 160px;
+  }
+
+  .firma-line {
+    border-top: 1.5px solid #444;
+    margin-bottom: 4px;
+  }
+
+  .firma-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Línea de corte ── */
+  .cut-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    border-top: 2px dashed #555;
+    padding-top: 4px;
+  }
+
+  .cut-line .scissor {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* ── Cargo ── */
+  .cargo-section { }
+
+  .cargo-title {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .cargo-body {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .cargo-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cargo-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid #555;
+    padding: 5px 10px;
+  }
+
+  .cargo-field label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .cargo-field input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    background: transparent;
+  }
+
+  .cargo-qr {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #aaa;
+    text-align: center;
+    padding: 4px;
+  }
+
+  /* ── Impresión/PDF: ocultar botones ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    #documento { box-shadow: none; border: none; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Barra de acciones -->
+<div class="toolbar">
+  <button class="btn-clear" onclick="limpiarFormulario()">✕ Limpiar</button>
+  <button class="btn-pdf" onclick="descargarPDF()">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6zm2-5h8v1H8v-1zm0-2h8v1H8v-1zm0-2h5v1H8v-1z"/></svg>
+    Descargar PDF
+  </button>
+</div>
+
+<!-- Documento -->
+<div id="documento">
+
+  <!-- Cabecera -->
+  <div class="header-wrap">
+    <div class="header-logo-block">
+      <img src="../images/logo.jpg" alt="Logo" class="logo-placeholder" style="object-fit: contain;">
+
+      <div class="header-texts">
+        <span class="inst-name">MUNICIPALIDAD DISTRITAL DE ANDRÉS AVELINO<br>CÁCERES DORREGARAY</span>
+        <span class="doc-type">TRÁMITE DOCUMENTARIO</span>
+      </div>
+    </div>
+
+    <div class="header-qr">Código QR /<br>Sello</div>
+  </div>
+
+  <!-- FUT -->
+  <div class="fut-label">FORMATO ÚNICO DE TRÁMITE (FUT)</div>
+
+  <!-- Destinatario -->
+  <p class="destinatario">SEÑOR ALCALDE DE LA MUNICIPALIDAD DISTRITAL ANDRÉS AVELINO CÁCERES DORREGARAY</p>
+
+  <!-- Solicito -->
+  <div class="solicito-row">
+    <label>SOLICITO:</label>
+    <input type="text" id="solicito" placeholder="Describa brevemente lo que solicita...">
+  </div>
+
+  <!-- I. Datos del solicitante -->
+  <p class="section-title">I.- DATOS DEL SOLICITANTE:</p>
+  <table class="data-table">
+    <tr>
+      <td class="cell-label">TITULAR (APELLIDOS Y NOMBRES)</td>
+      <td class="cell-input"><input type="text" id="titular" placeholder=""></td>
+    </tr>
+    <tr>
+      <td class="cell-label">REPRESENTANTE (APELLIDOS Y NOMBRES)</td>
+      <td class="cell-input"><input type="text" id="representante" placeholder=""></td>
+    </tr>
+    <tr>
+      <td class="cell-label">Nº DNI DEL SOLICITANTE</td>
+      <td class="cell-input"><input type="text" id="dni" placeholder="" maxlength="8"></td>
+    </tr>
+    <tr>
+      <td class="cell-label">DOMICILIO FISCAL DEL SOLICITANTE</td>
+      <td class="cell-input"><input type="text" id="domicilio" placeholder=""></td>
+    </tr>
+    <tr>
+      <td class="cell-label">N° TELÉFONO/CELULAR</td>
+      <td class="cell-input"><input type="tel" id="telefono" placeholder=""></td>
+    </tr>
+    <tr>
+      <td class="cell-label">CORREO ELECTRÓNICO</td>
+      <td class="cell-input"><input type="email" id="correo" placeholder=""></td>
+    </tr>
+    <tr>
+      <td class="cell-label">OTROS</td>
+      <td class="cell-input"><input type="text" id="otros" placeholder=""></td>
+    </tr>
+  </table>
+
+  <!-- II. Detalle -->
+  <p class="section-title">II.- DETALLE DE LO SOLICITADO:</p>
+  <div class="detalle-wrap">
+    <div class="detalle-lines" id="detalle-lines">
+      <div class="line-row"><input type="text" placeholder=""></div>
+      <div class="line-row"><input type="text" placeholder=""></div>
+      <div class="line-row"><input type="text" placeholder=""></div>
+      <div class="line-row"><input type="text" placeholder=""></div>
+      <div class="line-row"><input type="text" placeholder=""></div>
+      <div class="line-row"><input type="text" placeholder=""></div>
+    </div>
+  </div>
+
+  <!-- III. Documentos adjuntos -->
+  <p class="section-title">III.- DOCUMENTOS ADJUNTOS:</p>
+  <div class="docs-section">
+    <div class="docs-grid">
+      <!-- Col izquierda -->
+      <div>
+        <div class="doc-item">
+          <span class="doc-num">1.-</span>
+          <div class="doc-check" id="chk1" onclick="toggleCheck('chk1')"></div>
+          <span class="doc-label">COPIA DE DNI</span>
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">2.-</span>
+          <div class="doc-check" id="chk2" onclick="toggleCheck('chk2')"></div>
+          <span class="doc-label">RECIBO DE PAGO</span>
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">3.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">4.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+      </div>
+      <!-- Col derecha -->
+      <div>
+        <div class="doc-item">
+          <span class="doc-num">5.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">6.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">7.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">8.-</span>
+          <input type="text" class="doc-text" placeholder="...........................................................">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nota -->
+  <p class="nota">
+    <strong>NOTA:</strong> En caso de no cumplir la documentación observada en el plazo de dos días hábiles,
+    se tendrá como no presentada su petición (Art. 125. Ley de procedimiento Administrativo General).
+  </p>
+
+  <!-- Lugar y fecha -->
+  <div class="lugar-fecha">
+    Andrés Avelino Cáceres Dorregaray,
+    <input type="text" id="lugar-dia" placeholder="__" style="width:36px;">
+    de
+    <input type="text" id="lugar-mes" placeholder="_______________" style="width:110px;">
+    del 2025.
+  </div>
+
+  <!-- Firma -->
+  <div class="firma-row">
+    <div class="firma-box">
+      <div class="firma-line"></div>
+      <div class="firma-label">FIRMA</div>
+    </div>
+  </div>
+
+  <!-- Línea de corte -->
+  <div class="cut-line">
+    <span class="scissor">✂</span>
+  </div>
+
+  <!-- Cargo -->
+  <div class="cargo-section">
+    <p class="cargo-title">CARGO</p>
+    <div class="cargo-body">
+      <div class="cargo-fields">
+        <div class="cargo-field">
+          <label>SOLICITANTE:</label>
+          <input type="text" id="cargo-solicitante" placeholder="">
+        </div>
+        <div class="cargo-field">
+          <label>SOLICITA:</label>
+          <input type="text" id="cargo-solicita" placeholder="">
+        </div>
+      </div>
+      <div class="cargo-qr">Sello /<br>Código QR</div>
+    </div>
+  </div>
+
+</div><!-- /documento -->
+
+<script>
+function toggleCheck(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('checked');
+  el.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function descargarPDF() {
+  const el = document.getElementById('documento');
+
+  // Clonar el elemento para renderizarlo sin restricciones de posición
+  const clone = el.cloneNode(true);
+  clone.style.position = 'fixed';
+  clone.style.top = '0';
+  clone.style.left = '0';
+  clone.style.width = el.offsetWidth + 'px';
+  clone.style.maxWidth = 'none';
+  clone.style.margin = '0';
+  clone.style.padding = '28px 32px 32px';
+  clone.style.background = '#fff';
+  clone.style.zIndex = '-9999';
+  clone.style.boxShadow = 'none';
+  clone.style.border = 'none';
+  document.body.appendChild(clone);
+
+  const w = clone.offsetWidth;
+  const h = clone.scrollHeight;
+
+  const opt = {
+    margin:      [0, 0, 0, 0],
+    filename:    'FUT_Municipalidad_MAACD.pdf',
+    image:       { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      letterRendering: true,
+      width: w,
+      height: h,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0
+    },
+    jsPDF: {
+      unit: 'px',
+      format: [w * 2, h * 2],
+      orientation: 'portrait',
+      hotfixes: ['px_scaling']
+    }
+  };
+
+  html2pdf()
+    .set(opt)
+    .from(clone)
+    .save()
+    .finally(function() {
+      document.body.removeChild(clone);
+    });
+}
+
+function limpiarFormulario() {
+  if (!confirm('¿Deseas limpiar todos los campos?')) return;
+  document.querySelectorAll('#documento input').forEach(i => i.value = '');
+  document.querySelectorAll('.doc-check').forEach(el => {
+    el.classList.remove('checked');
+    el.textContent = '';
+  });
+}
+
+// Auto-rellenar cargo desde datos del solicitante
+document.getElementById('titular').addEventListener('input', function() {
+  document.getElementById('cargo-solicitante').value = this.value;
+});
+document.getElementById('solicito').addEventListener('input', function() {
+  document.getElementById('cargo-solicita').value = this.value;
+});
+
+// Prellenar datos desde URL query parameters
+window.addEventListener('load', function() {
+  const params = new URLSearchParams(window.location.search);
+  
+  // Mapear parámetros del URL a IDs del formulario
+  const mappings = {
+    'nombres_solicitante': 'titular',
+    'representante': 'representante',
+    'dni_ruc': 'dni',
+    'direccion': 'domicilio',
+    'telefono_whatsapp': 'telefono',
+    'email': 'correo',
+    'nombre_comercial': 'solicitante-nombre-comercial',
+    'actividad': 'solicitante-actividad',
+    'area_edificacion': 'solicitante-area',
+    'nombre_evento': 'evento-nombre',
+    'fecha_evento': 'evento-fecha',
+    'solicitud': 'solicito'
+  };
+  
+  // Rellenar cada campo si viene en URL
+  for (let [paramKey, fieldId] of Object.entries(mappings)) {
+    const value = params.get(paramKey);
+    if (value) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.value = decodeURIComponent(value);
+      }
+    }
+  }
+  
+  // Si hay detalle, rellenarlo en las líneas de "Detalle de lo solicitado"
+  const detalle = params.get('detalle');
+  if (detalle) {
+    const detalleLines = document.querySelectorAll('.detalle-lines .line-row input');
+    const detalleTexto = decodeURIComponent(detalle);
+    if (detalleLines.length > 0) {
+      detalleLines[0].value = detalleTexto;
+    }
+  }
+});
+</script>
+</body>
+</html>

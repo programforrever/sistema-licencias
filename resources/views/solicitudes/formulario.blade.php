@@ -3,45 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Trámite Online ITSE M.A..A.C.D</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('images/logo_muni.png') }}">
 
     <style>
-        body { background: linear-gradient(180deg, #12961dff 0%, #0f2812ff 100%); min-height: 100vh; padding: 30px 0; }
-        .form-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .header-municipalidad { text-align: center; color: white; margin-bottom: 25px; }
-        .header-municipalidad h4 { font-size: 18px; font-weight: 700; }
-        .header-municipalidad p { font-size: 13px; color: #d4f5d4; }
-        .section-title { background: #17B323; color: white; padding: 8px 15px; border-radius: 6px; margin: 15px 0 10px; font-size: 13px; }
-        .footer-pub { text-align: center; color: #d4f5d4; font-size: 12px; padding: 15px; }
+        * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+        :root {
+            --brand:        #2563eb;
+            --brand-light:  #eff6ff;
+            --brand-dark:   #1e40af;
+            --surface:      #ffffff;
+            --bg:           #f8fafc;
+            --border:       #e2e8f0;
+            --text-main:    #0f172a;
+            --text-muted:   #64748b;
+            --green-main:   #12961d;
+            --green-dark:   #0f2812;
+        }
+
+        body { 
+            background: linear-gradient(180deg, var(--green-main) 0%, var(--green-dark) 100%);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        .form-card {
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            background: var(--surface);
+        }
+
+        .header-municipalidad {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .header-municipalidad h4 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .header-municipalidad p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, var(--green-main), #1a9e28);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-pub {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            padding: 15px;
+        }
 
         .paso { display: none; }
-        .paso.activo { display: block; }
+        .paso.activo { display: block; animation: fadeIn 0.25s ease-in; }
 
-        .progress-steps { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .step-dot { width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.3); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; transition: all 0.3s; }
-        .step-dot.activo { background: white; color: #17B323; }
-        .step-dot.completado { background: #17B323; border: 2px solid white; color: white; }
-        .step-line { width: 40px; height: 2px; background: rgba(255,255,255,0.3); align-self: center; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-dot.activo {
+            background: white;
+            color: var(--green-main);
+            border-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .step-dot.completado {
+            background: var(--green-main);
+            border: 2px solid white;
+            color: white;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            align-self: center;
+        }
+
         .step-line.completado { background: white; }
 
-        .opcion-card { cursor: pointer; border: 2px solid #dee2e6; border-radius: 12px; padding: 25px; text-align: center; transition: all 0.2s; }
-        .opcion-card:hover { border-color: #17B323; background: #f0fff0; transform: translateY(-3px); }
-        .opcion-card i { font-size: 40px; margin-bottom: 10px; color: #17B323; }
-        .opcion-card h5 { font-weight: bold; margin-bottom: 5px; }
-        .opcion-card p { font-size: 13px; color: #666; margin: 0; }
+        .opcion-card {
+            cursor: pointer;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.25s ease;
+            background: var(--surface);
+        }
 
-        .area-card { cursor: pointer; border: 2px solid #dee2e6; border-radius: 10px; padding: 20px; text-align: center; transition: all 0.2s; }
-        .area-card:hover { border-color: #17B323; background: #f0fff0; }
-        .area-card i { font-size: 30px; color: #17B323; margin-bottom: 8px; }
-        .area-card h6 { font-weight: bold; }
-        .area-card small { color: #666; }
+        .opcion-card:hover {
+            border-color: var(--green-main);
+            background: #f0fff0;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(18, 150, 29, 0.15);
+        }
+
+        .opcion-card i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: var(--green-main);
+        }
+
+        .opcion-card h5 {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .opcion-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .area-card {
+            cursor: pointer;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: var(--surface);
+        }
+
+        .area-card:hover {
+            border-color: var(--green-main);
+            background: #f0fff0;
+            box-shadow: 0 4px 12px rgba(18, 150, 29, 0.1);
+        }
+
+        .area-card i {
+            font-size: 30px;
+            color: var(--green-main);
+            margin-bottom: 8px;
+        }
+
+        .area-card h6 {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .area-card small { color: var(--text-muted); }
 
         /* ERRORES */
-        .campo-error { border-color: #dc3545 !important; background-color: #fff5f5 !important; }
-        .mensaje-error { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; font-size: 13px; display: none; }
+        .campo-error {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5 !important;
+        }
+
+        .mensaje-error {
+            background: #fff8e1;
+            border: 1px solid #ffd54f;
+            border-left: 4px solid #f57c00;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+            color: #e65100;
+        }
+
         .mensaje-error ul { margin: 5px 0 0 0; padding-left: 20px; }
         .mensaje-error ul li { margin-bottom: 3px; }
         .label-error { color: #dc3545; font-size: 12px; margin-top: 3px; display: none; }
@@ -49,18 +219,119 @@
         /* PRECIO */
         .precio-box {
             display: none;
-            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-            border: 2px solid #17B323;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border: 2px solid var(--green-main);
             border-radius: 12px;
-            padding: 16px 20px;
+            padding: 18px 20px;
             margin-top: 15px;
             text-align: center;
         }
-        .precio-box .precio-label { font-size: 13px; color: #555; margin-bottom: 4px; }
-        .precio-box .precio-monto { font-size: 28px; font-weight: bold; color: #17B323; }
-        .precio-box .precio-monto span { font-size: 14px; color: #888; }
-        .precio-box .precio-tipo { font-size: 12px; color: #777; margin-top: 4px; }
-        .precio-box .precio-nota { font-size: 11px; color: #999; margin-top: 6px; font-style: italic; }
+
+        .precio-box .precio-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .precio-box .precio-monto {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--green-main);
+            letter-spacing: -0.01em;
+        }
+
+        .precio-box .precio-monto span { font-size: 14px; color: var(--text-muted); }
+        .precio-box .precio-tipo { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .precio-box .precio-nota { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-style: italic; }
+
+        /* FORM CONTROLS */
+        .form-control, .form-select {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background: var(--bg);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--green-main);
+            box-shadow: 0 0 0 3px rgba(18, 150, 29, 0.12);
+            outline: none;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* BUTTONS */
+        .btn-success {
+            background: var(--green-main);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+
+        .btn-success:hover {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-secondary {
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            transition: all 0.15s;
+        }
+
+        .btn-outline-secondary:hover {
+            border-color: var(--green-main);
+            color: var(--green-main);
+            background: #f0fff0;
+        }
+
+        /* ALERTS */
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-left: 4px solid var(--green-main);
+            color: #166534;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        /* BÚSQUEDA ESTADO */
+        #busqueda-estado { margin-top: 8px; }
+        #busqueda-cargando { color: var(--brand); }
+        #busqueda-exito {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+        #busqueda-error {
+            background: #fff5f5;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .progress-steps { gap: 5px; }
+            .step-dot { width: 35px; height: 35px; font-size: 12px; }
+            .step-line { width: 20px; }
+            .opcion-card { padding: 18px; }
+            .area-card { padding: 15px; }
+            .precio-box { margin: 10px auto; }
+        }
     </style>
 </head>
 <body>
@@ -279,13 +550,30 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label fw-bold">DNI / RUC <span class="text-danger">*</span></label>
-                                <input type="text" name="dni_ruc" id="dni_ruc"
-                                    class="form-control @error('dni_ruc') is-invalid @enderror"
-                                    value="{{ old('dni_ruc') }}"
-                                    maxlength="11" inputmode="numeric"
-                                    oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                                    placeholder="8 a 11 dígitos">
+                                <div class="input-group">
+                                    <input type="text" name="dni_ruc" id="dni_ruc"
+                                        class="form-control @error('dni_ruc') is-invalid @enderror"
+                                        value="{{ old('dni_ruc') }}"
+                                        maxlength="11" inputmode="numeric"
+                                        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                                        placeholder="8 a 11 dígitos">
+                                    <button type="button" class="btn btn-outline-primary" id="btnVerificar" title="Verificar DNI/RUC">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
                                 <div class="label-error" id="err_dni">Ingresa tu DNI o RUC</div>
+                                <!-- Indicador de búsqueda -->
+                                <div id="busqueda-estado" style="display:none; padding:8px; margin-top:8px; border-radius:6px; font-size:12px;">
+                                    <div id="busqueda-cargando" style="display:none; color:#0066cc;">
+                                        <i class="fas fa-spinner fa-spin"></i> Verificando...
+                                    </div>
+                                    <div id="busqueda-exito" style="display:none; color:#28a745; background:#f0fff0; border:1px solid #c3e6cb; padding:8px; border-radius:4px;">
+                                        <i class="fas fa-check-circle"></i> Datos encontrados y completados
+                                    </div>
+                                    <div id="busqueda-error" style="display:none; color:#dc3545; background:#fff5f5; border:1px solid #f5c6cb; padding:8px; border-radius:4px;">
+                                        <i class="fas fa-exclamation-circle"></i> <span id="error-msg"></span>
+                                    </div>
+                                </div>
                                 @error('dni_ruc')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-3 mb-3">
@@ -423,12 +711,12 @@
                 <div class="paso" id="paso4">
                     <div class="card form-card p-4">
                         <div class="section-title"><i class="fas fa-paperclip me-2"></i>Documentos Adjuntos</div>
-                        <div class="alert alert-warning mb-3">
-    <i class="fas fa-download me-2"></i>
-    <strong>¿No tienes el formato FUT?</strong> Descárgalo, llénalo e imprímelo para adjuntarlo.
-    <a href="{{ asset('plantillas/FUT_PDF.pdf') }}" target="_blank" class="btn btn-warning btn-sm ms-2">
-        <i class="fas fa-file-pdf me-1"></i>Descargar FUT
-    </a>
+                        <div class="alert alert-success mb-3">
+    <i class="fas fa-file-alt me-2"></i>
+    <strong>¡Completa tu Plantilla ITSCE!</strong> Se abrirá con tus datos prellenados.
+    <button type="button" class="btn btn-success btn-sm ms-2" onclick="abrirPlantillaITCE()">
+        <i class="fas fa-external-link-alt me-1"></i>Llenar Plantilla ITSCE
+    </button>
 </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
@@ -678,6 +966,144 @@ function validarYContinuar() {
 
     irPaso(4);
 }
+
+// ===== BÚSQUEDA DNI/RUC =====
+document.getElementById('btnVerificar').addEventListener('click', async function() {
+    const dniRuc = document.getElementById('dni_ruc').value.trim();
+    
+    if (!dniRuc) {
+        mostrarErrorBusqueda('Por favor ingresa un DNI o RUC');
+        return;
+    }
+    
+    if (dniRuc.length < 8 || dniRuc.length > 11) {
+        mostrarErrorBusqueda('DNI debe tener 8 dígitos, RUC debe tener 11');
+        return;
+    }
+    
+    // Verificar si es DNI (8 dígitos) o RUC (11 dígitos)
+    const esDNI = dniRuc.length === 8;
+    const tipoConsulta = esDNI ? 'DNI' : 'RUC';
+    
+    mostrarCargando();
+    
+    try {
+        const endpoint = esDNI ? '/api/consultar-dni' : '/api/consultar-ruc';
+        const campoNombre = esDNI ? 'dni' : 'ruc';
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ [campoNombre]: dniRuc })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // DNI encontrado
+            if (esDNI) {
+                // Concatenar nombres, apellido_paterno y apellido_materno
+                const nombreCompleto = [
+                    data.nombres,
+                    data.apellido_paterno,
+                    data.apellido_materno
+                ].filter(n => n).join(' ').trim();
+                
+                document.getElementById('nombres_solicitante').value = nombreCompleto || data.nombres;
+            } else {
+                // RUC encontrado
+                document.getElementById('nombres_solicitante').value = data.nombres || '';
+                // Rellenar datos del negocio si existen
+                if (data.direccion) {
+                    document.getElementById('direccion_neg').value = data.direccion;
+                }
+                if (data.departamento) {
+                    document.getElementById('departamento_neg').value = data.departamento;
+                }
+                if (data.provincia) {
+                    document.getElementById('provincia_neg').value = data.provincia;
+                }
+            }
+            
+            // Marcar como completado y mostrar éxito
+            document.getElementById('dni_ruc').style.borderColor = '#28a745';
+            document.getElementById('dni_ruc').style.backgroundColor = '#f0fff0';
+            mostrarExitoBusqueda();
+            
+        } else {
+            mostrarErrorBusqueda(data.message || `${tipoConsulta} no encontrado`);
+        }
+    } catch (error) {
+        console.error('Error en búsqueda:', error);
+        mostrarErrorBusqueda('Error al conectar. Intenta más tarde.');
+    }
+});
+
+function mostrarCargando() {
+    document.getElementById('busqueda-estado').style.display = 'block';
+    document.getElementById('busqueda-cargando').style.display = 'block';
+    document.getElementById('busqueda-exito').style.display = 'none';
+    document.getElementById('busqueda-error').style.display = 'none';
+}
+
+function mostrarExitoBusqueda() {
+    document.getElementById('busqueda-cargando').style.display = 'none';
+    document.getElementById('busqueda-exito').style.display = 'block';
+    document.getElementById('busqueda-error').style.display = 'none';
+}
+
+function mostrarErrorBusqueda(mensaje) {
+    document.getElementById('busqueda-cargando').style.display = 'none';
+    document.getElementById('busqueda-exito').style.display = 'none';
+    document.getElementById('busqueda-error').style.display = 'block';
+    document.getElementById('error-msg').textContent = mensaje;
+    document.getElementById('dni_ruc').style.borderColor = '#dc3545';
+    document.getElementById('dni_ruc').style.backgroundColor = '#fff5f5';
+}
+
+// ===== ABRIR PLANTILLA ITCE PRELLENADA =====
+function abrirPlantillaITCE() {
+    // Capturar datos del formulario
+    const datos = {
+        nombres_solicitante: document.getElementById('nombres_solicitante').value,
+        dni_ruc: document.getElementById('dni_ruc').value,
+        telefono_whatsapp: document.getElementById('telefono_whatsapp').value,
+        email: document.querySelector('input[name="email"]')?.value || '',
+        representante: document.querySelector('input[name="representante"]')?.value || '',
+        solicitud: 'Certificado de Inspección Técnica de Seguridad e ITSE'
+    };
+
+    // Según tipo de certificado
+    if (tipoCertificado === 'evento_publico') {
+        datos.nombre_evento = document.getElementById('nombre_evento').value;
+        datos.fecha_evento = document.getElementById('fecha_evento').value;
+        datos.nombre_comercial = document.getElementById('nombre_comercial_ev').value;
+        datos.direccion = document.getElementById('direccion_ev').value;
+        datos.solicitud = 'Certificado de Inspección Técnica Previa para Evento/Espectáculo Público';
+        
+        datos.detalle = `Evento: ${datos.nombre_comercial || ''} - Fecha: ${datos.fecha_evento || ''} - Ubicación: ${datos.direccion || ''}`;
+    } else {
+        datos.nombre_comercial = document.getElementById('nombre_comercial_neg').value;
+        datos.direccion = document.getElementById('direccion_neg').value;
+        datos.actividad = document.getElementById('actividad_neg').value;
+        datos.area_edificacion = document.getElementById('area_neg').value;
+        datos.solicitud = 'Certificado de Inspección Técnica de Seguridad de Local/Negocio';
+        
+        datos.detalle = `Local: ${datos.nombre_comercial || ''} - Actividad: ${datos.actividad || ''} - Área: ${datos.area_edificacion || ''} m²`;
+    }
+
+    // Construir URL con parámetros codificados
+    let url = '{{ asset("plantillas/fut_municipalidad.html") }}?';
+    const params = new URLSearchParams(datos);
+    url += params.toString();
+
+    // Abrir en nueva pestaña
+    window.open(url, '_blank');
+}
+
 </script>
 </body>
 </html>

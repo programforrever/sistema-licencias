@@ -12,6 +12,11 @@
     <div class="card-body">
         <form action="{{ route('licencias.store') }}" method="POST">
             @csrf
+            
+            {{-- Pasar el ID de solicitud si viene de una solicitud --}}
+            @if($solicitud)
+                <input type="hidden" name="solicitud_id" value="{{ $solicitud->id }}">
+            @endif
 
             {{-- TIPO DE CERTIFICADO --}}
             <div class="row mb-4">
@@ -19,7 +24,7 @@
                     <label class="form-label fw-bold fs-5">Tipo de Certificado</label>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <input type="radio" class="btn-check" name="tipo_certificado" id="anexo_14" value="anexo_14" checked>
+                            <input type="radio" class="btn-check" name="tipo_certificado" id="anexo_14" value="anexo_14" {{ (old('tipo_certificado') ?? $solicitud?->tipo_certificado ?? 'anexo_14') === 'anexo_14' ? 'checked' : '' }}>
                             <label class="btn btn-outline-danger w-100 py-3" for="anexo_14">
                                 <i class="fas fa-exclamation-triangle d-block fa-2x mb-1"></i>
                                 <strong>ANEXO 14</strong><br>
@@ -27,7 +32,7 @@
                             </label>
                         </div>
                         <div class="col-md-4">
-                            <input type="radio" class="btn-check" name="tipo_certificado" id="anexo_13" value="anexo_13">
+                            <input type="radio" class="btn-check" name="tipo_certificado" id="anexo_13" value="anexo_13" {{ (old('tipo_certificado') ?? $solicitud?->tipo_certificado) === 'anexo_13' ? 'checked' : '' }}>
                             <label class="btn btn-outline-warning w-100 py-3" for="anexo_13">
                                 <i class="fas fa-exclamation-circle d-block fa-2x mb-1"></i>
                                 <strong>ANEXO 13</strong><br>
@@ -35,7 +40,7 @@
                             </label>
                         </div>
                         <div class="col-md-4">
-                            <input type="radio" class="btn-check" name="tipo_certificado" id="evento_publico" value="evento_publico">
+                            <input type="radio" class="btn-check" name="tipo_certificado" id="evento_publico" value="evento_publico" {{ (old('tipo_certificado') ?? $solicitud?->tipo_certificado) === 'evento_publico' ? 'checked' : '' }}>
                             <label class="btn btn-outline-primary w-100 py-3" for="evento_publico">
                                 <i class="fas fa-calendar-alt d-block fa-2x mb-1"></i>
                                 <strong>EVENTO PÚBLICO</strong><br>
@@ -58,7 +63,7 @@
                             <select name="contribuyente_id" class="form-select @error('contribuyente_id') is-invalid @enderror" required>
                                 <option value="">-- Seleccionar --</option>
                                 @foreach($contribuyentes as $c)
-                                <option value="{{ $c->id }}" {{ old('contribuyente_id') == $c->id ? 'selected' : '' }}>
+                                <option value="{{ $c->id }}" {{ (old('contribuyente_id') ?? $contribuyentePrellenado?->id) == $c->id ? 'selected' : '' }}>
                                     {{ $c->dni_ruc }} - {{ $c->nombres_razon_social }}
                                 </option>
                                 @endforeach
@@ -102,25 +107,25 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Nombre Comercial</label>
-                            <input type="text" name="nombre_comercial" class="form-control @error('nombre_comercial') is-invalid @enderror" value="{{ old('nombre_comercial') }}">
+                            <input type="text" name="nombre_comercial" class="form-control @error('nombre_comercial') is-invalid @enderror" value="{{ old('nombre_comercial') ?? $solicitud?->nombre_comercial ?? '' }}">
                             @error('nombre_comercial')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Dirección del Establecimiento</label>
-                            <input type="text" name="direccion_establecimiento" class="form-control @error('direccion_establecimiento') is-invalid @enderror" value="{{ old('direccion_establecimiento') }}">
+                            <input type="text" name="direccion_establecimiento" class="form-control @error('direccion_establecimiento') is-invalid @enderror" value="{{ old('direccion_establecimiento') ?? $solicitud?->direccion ?? '' }}">
                             @error('direccion_establecimiento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Provincia</label>
-                            <input type="text" name="provincia" class="form-control" value="{{ old('provincia', 'HUAMANGA') }}">
+                            <input type="text" name="provincia" class="form-control" value="{{ old('provincia') ?? $solicitud?->provincia ?? 'HUAMANGA' }}">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Departamento</label>
-                            <input type="text" name="departamento" class="form-control" value="{{ old('departamento', 'AYACUCHO') }}">
+                            <input type="text" name="departamento" class="form-control" value="{{ old('departamento') ?? $solicitud?->departamento ?? 'AYACUCHO' }}">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Solicitado por</label>
-                            <input type="text" name="solicitado_por" class="form-control @error('solicitado_por') is-invalid @enderror" value="{{ old('solicitado_por') }}">
+                            <input type="text" name="solicitado_por" class="form-control @error('solicitado_por') is-invalid @enderror" value="{{ old('solicitado_por') ?? $solicitud?->nombres_solicitante ?? '' }}">
                             @error('solicitado_por')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-3 mb-3">
@@ -133,7 +138,7 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label fw-bold">Área Edificación (m2)</label>
-                            <input type="number" step="0.01" name="area_edificacion" class="form-control" value="{{ old('area_edificacion') }}">
+                            <input type="number" step="0.01" name="area_edificacion" class="form-control" value="{{ old('area_edificacion') ?? $solicitud?->area_edificacion ?? '' }}">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label fw-bold">Vigencia</label>
@@ -161,31 +166,32 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Nombre del Establecimiento/Lugar</label>
-                            <input type="text" name="nombre_establecimiento" class="form-control @error('nombre_establecimiento') is-invalid @enderror" value="{{ old('nombre_establecimiento') }}">
+                            <input type="text" name="nombre_establecimiento" class="form-control @error('nombre_establecimiento') is-invalid @enderror" value="{{ old('nombre_establecimiento') ?? $solicitud?->nombre_comercial ?? '' }}">
                             @error('nombre_establecimiento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Dirección del Lugar</label>
-                            <input type="text" name="direccion_establecimiento" class="form-control" value="{{ old('direccion_establecimiento') }}">
+                            <input type="text" name="direccion_establecimiento" class="form-control @error('direccion_establecimiento') is-invalid @enderror" value="{{ old('direccion_establecimiento') ?? $solicitud?->direccion ?? '' }}">
+                            @error('direccion_establecimiento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-8 mb-3">
                             <label class="form-label fw-bold">Nombre del Evento</label>
-                            <input type="text" name="nombre_evento" class="form-control @error('nombre_evento') is-invalid @enderror" value="{{ old('nombre_evento') }}">
+                            <input type="text" name="nombre_evento" class="form-control @error('nombre_evento') is-invalid @enderror" value="{{ old('nombre_evento') ?? $solicitud?->nombre_evento ?? '' }}">
                             @error('nombre_evento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Fecha del Evento</label>
-                            <input type="date" name="fecha_evento" class="form-control @error('fecha_evento') is-invalid @enderror" value="{{ old('fecha_evento') }}">
+                            <input type="date" name="fecha_evento" class="form-control @error('fecha_evento') is-invalid @enderror" value="{{ old('fecha_evento') ?? $solicitud?->fecha_evento?->format('Y-m-d') ?? '' }}">
                             @error('fecha_evento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Organizador (Nombre completo)</label>
-                            <input type="text" name="organizador_nombre" class="form-control @error('organizador_nombre') is-invalid @enderror" value="{{ old('organizador_nombre') }}">
+                            <input type="text" name="organizador_nombre" class="form-control @error('organizador_nombre') is-invalid @enderror" value="{{ old('organizador_nombre') ?? $solicitud?->organizador_nombre ?? '' }}">
                             @error('organizador_nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label fw-bold">DNI del Organizador</label>
-                            <input type="text" name="organizador_dni" class="form-control @error('organizador_dni') is-invalid @enderror" value="{{ old('organizador_dni') }}">
+                            <input type="text" name="organizador_dni" class="form-control @error('organizador_dni') is-invalid @enderror" value="{{ old('organizador_dni') ?? $solicitud?->organizador_dni ?? '' }}">
                             @error('organizador_dni')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-3 mb-3">

@@ -189,9 +189,31 @@
                         <textarea name="observaciones" class="form-control" rows="3"
                             placeholder="Motivo de aprobación o rechazo...">{{ $solicitud->observaciones }}</textarea>
                     </div>
-                    <button type="submit" class="btn btn-warning w-100">
-                        <i class="fas fa-save me-2"></i>Guardar
-                    </button>
+
+                    <!-- Opciones de notificación -->
+                    <div class="mb-3 border-top pt-3">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-bell me-2"></i>Enviar Notificación
+                        </label>
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="enviar_notificacion" value="email" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-envelope me-2"></i>Guardar + Email
+                            </button>
+                            <button type="submit" name="enviar_notificacion" value="whatsapp" class="btn btn-sm btn-outline-success">
+                                <i class="fab fa-whatsapp me-2"></i>Guardar + WhatsApp
+                            </button>
+                            <button type="submit" name="enviar_notificacion" value="ambos" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-share-alt me-2"></i>Guardar + Ambos
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                <i class="fas fa-save me-2"></i>Solo Guardar
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            ✉️ Email: {{ $solicitud->email ?? 'No registrado' }}<br>
+                            📱 WhatsApp: {{ $solicitud->telefono_whatsapp ?? 'No registrado' }}
+                        </small>
+                    </div>
                 </form>
             </div>
         </div>
@@ -216,4 +238,21 @@
 @endif
     </div>
 </div>
+
+@php
+    $whatsappLink = session('whatsapp_link');
+@endphp
+
+@if($whatsappLink)
+<script>
+    // Abrir WhatsApp automáticamente
+    window.addEventListener('load', function() {
+        const link = `{{ $whatsappLink }}`;
+        console.log('Abriendo WhatsApp con link:', link.substring(0, 50) + '...');
+        setTimeout(function() {
+            window.open(link, '_blank');
+        }, 800);
+    });
+</script>
+@endif
 @endsection

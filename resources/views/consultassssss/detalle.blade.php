@@ -77,13 +77,33 @@
                     @endif
                 </div>
                 <div class="card-footer text-center py-3">
-                    <a href="{{ route('consulta.index') }}" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-arrow-left me-2"></i>Volver
-                    </a>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{{ route('consulta.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                        <a href="{{ route('solicitudes.seguimiento') }}" class="btn btn-primary">
+                            <i class="fas fa-redo me-1"></i>Nueva gestión
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div class="text-center text-muted mt-3" style="font-size:12px; color:#5a7aaa !important">
+            <div class="container py-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="{{ route('solicitudes.seguimiento') }}" class="btn btn-outline-light" style="border-width: 2px;">
+                                <i class="fas fa-redo me-2"></i>Nueva gestión
+                            </a>
+                            <a href="/" class="btn btn-outline-light" style="border-width: 2px;">
+                                <i class="fas fa-home me-2"></i>Inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-muted" style="font-size:12px; color:#5a7aaa !important; margin-top: 2rem;">
                 <p>© {{ date('Y') }} Municipalidad Distrital de Andrés Avelino Cáceres Dorregaray</p>
             </div>
         </div>

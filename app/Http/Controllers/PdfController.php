@@ -75,29 +75,10 @@ class PdfController extends Controller
         return $pdf->stream('certificado-' . $licencia->numero_licencia . '.pdf');
     }
 
-    public function generarFUT($id = null)
+    public function generarFUT()
     {
-        $qrContent = 'FUT-' . date('YmdHis');
-        
-        $svgContent = QrCode::format('svg')
-            ->size(120)
-            ->margin(2)
-            ->generate($qrContent);
-
-        if (extension_loaded('imagick')) {
-            $imagick = new \Imagick();
-            $imagick->readImageBlob($svgContent);
-            $imagick->setImageFormat('png');
-            $qr = base64_encode($imagick->getImageBlob());
-            $mimeType = 'image/png';
-        } else {
-            $qr = base64_encode($svgContent);
-            $mimeType = 'image/svg+xml';
-        }
-
-        $pdf = Pdf::loadView('pdf.fut_pdf', compact('qr', 'mimeType'))
-            ->setPaper('a4', 'portrait');
-
-        return $pdf->stream('FUT_PDF-' . date('YmdHis') . '.pdf');
+        return view('pdf.fut_prellenado', [
+            'logo' => null,
+        ]);
     }
 }

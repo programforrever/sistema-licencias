@@ -52,6 +52,37 @@
 </div>
 
 <div class="card shadow-sm mt-4">
+    <div class="card-header bg-warning text-dark">
+        <i class="fas fa-certificate me-2"></i>Importar Licencias (Certificados ITSE)
+    </div>
+    <div class="card-body">
+        <p class="text-muted">El archivo Excel debe contener hojas con estos nombres:</p>
+        <code>ITSE 13 2024 | ITSE 14 2024 | ECSE 2024</code>
+        <p class="mt-3 text-sm text-muted">
+            <strong>Estructura esperada:</strong>
+        </p>
+        <ul class="small text-muted">
+            <li>Fila 1: Título (se ignora)</li>
+            <li>Fila 2: Subtítulo (se ignora)</li>
+            <li>Fila 3: Encabezados (MESES, Nº, FECHA, GIRO O ACTIVIDAD, NOMBRE COMERCIAL, SOLICITANTE, UBICACIÓN)</li>
+            <li>Fila 4+: Datos a importar</li>
+        </ul>
+        <hr>
+        <form action="{{ route('importar.licencias') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-3">
+                <label class="form-label">Seleccionar archivo Excel (.xlsx o .xls)</label>
+                <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls" required>
+                <small class="form-text text-muted">Por favor usa solo formatos .xlsx o .xls (no CSV)</small>
+            </div>
+            <button type="submit" class="btn btn-warning">
+                <i class="fas fa-upload me-2"></i>Importar Licencias
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
     <div class="card-header bg-dark text-white">
         <i class="fas fa-download me-2"></i>Plantillas de ejemplo
     </div>

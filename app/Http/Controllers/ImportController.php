@@ -18,7 +18,7 @@ class ImportController extends Controller
     public function importContribuyentes(Request $request)
     {
         $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv',
+            'archivo' => 'required|mimes:xlsx,xls|max:5120', // Solo Excel, máximo 5MB
         ]);
 
         try {
@@ -34,7 +34,7 @@ class ImportController extends Controller
     public function importActividades(Request $request)
     {
         $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv',
+            'archivo' => 'required|mimes:xlsx,xls|max:5120', // Solo Excel, máximo 5MB
         ]);
 
         try {
@@ -57,19 +57,25 @@ class ImportController extends Controller
             $importer = new LicenciasExcelImport();
             $importer->import($request->file('archivo')->getPathname());
 
-            $mensaje = "Importación completada: {$importer->importados} certificados importados.";
-            if ($importer->omitidos > 0) {
-                $mensaje .= " {$importer->omitidos} registros omitidos (ya existían o estaban vacíos).";
-            }
-            if (!empty($importer->errores)) {
-                $mensaje .= " Errores: " . implode(' | ', array_slice($importer->errores, 0, 3));
-            }
+            // Pasar datos detallados a la sesión
+            $resumen = [
+                'total_importados' => $importer->importados,
+                'total_omitidos' => $importer->omitidos,
+                'por_tipo' => $importer->porTipo,
+                'detalles_omitidos' => $importer->detallesOmitidos,
+                'errores' => array_slice($importer->errores, 0, 10),
+            ];
 
-            return redirect()->route('licencias.index')->with('success', $mensaje);
+            return redirect()->route('licencias.index')->with(['import_result' => $resumen]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Log::error('Error importación licencias', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()->back()
-                ->with('error', 'Error al importar: ' . $e->getMessage());
+                ->with('error', "Error al importar: " . $e->getMessage() . "\n\nRevisa que el archivo tenga las columnas correctas en las filas 3 (encabezados) y datos desde fila 4.");
         }
     }
 }

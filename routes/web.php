@@ -9,10 +9,11 @@ use App\Http\Controllers\ConsultaPublicaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('dashboard');
 });
 
 // ===== RUTAS PÚBLICAS =====
@@ -29,12 +30,16 @@ Route::post('tramite/enviar', [SolicitudController::class, 'enviar'])->name('sol
 Route::get('tramite/confirmacion/{codigo}', [SolicitudController::class, 'confirmacion'])->name('solicitudes.confirmacion');
 Route::get('tramite/seguimiento', [SolicitudController::class, 'seguimiento'])->name('solicitudes.seguimiento');
 
+// APIs Consultas Públicas (DNI/RUC) - Sin CSRF
+Route::withoutMiddleware(['Illuminate\Foundation\Http\Middleware\VerifyCsrfToken'])->group(function () {
+    Route::post('api/consultar-dni', [SolicitudController::class, 'consultarDNI'])->name('api.consultar-dni');
+    Route::post('api/consultar-ruc', [SolicitudController::class, 'consultarRUC'])->name('api.consultar-ruc');
+});
+
 // ===== RUTAS PRIVADAS =====
 Route::middleware(['auth'])->group(function () {
-    // Redirigir /dashboard a reportes
-    Route::get('/dashboard', function () {
-        return redirect()->route('reportes.index');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // IMPORTANTE: esta ruta debe ir ANTES del resource de licencias
     Route::get('licencias/crear-desde/{solicitud}', [LicenciaController::class, 'crearDesdeSolicitud'])->name('licencias.crear-desde-solicitud');
@@ -50,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('licencias.aprobar');
     Route::get('licencias/{licencia}/pdf', [PdfController::class, 'generarLicencia'])
         ->name('licencias.pdf');
+    Route::post('licencias/{licencia}/enviar-correo', [LicenciaController::class, 'enviarCorreo'])
+        ->name('licencias.enviar-correo');
+    Route::post('licencias/{licencia}/enviar-whatsapp', [LicenciaController::class, 'enviarWhatsApp'])
+        ->name('licencias.enviar-whatsapp');
 
     Route::get('importar', [ImportController::class, 'showForm'])->name('importar.form');
     Route::post('importar/contribuyentes', [ImportController::class, 'importContribuyentes'])->name('importar.contribuyentes');

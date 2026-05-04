@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUT – Municipalidad Distrital Andrés Avelino Cáceres Dorregaray</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #c8c8c8;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #documento {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  padding: 10mm 12mm;
+  border: 1px solid #000;
+  font-size: 10.5px;
+  color: #000;
+}
+
+/* CABECERA */
+.cab {
+  display: flex;
+  border: 2px solid #000;
+  height: 90px;
+}
+
+.cab-logo {
+  width: 80px;
+  border-right: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cab-center {
+  flex: 1;
+  background: #6aa84f;
+  color: #fff;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 2px solid #000;
+}
+
+.cab-inst {
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.cab-tramite {
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.cab-qr {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-box-header {
+  width: 80px;
+  height: 70px;
+  border: 2px solid #000;
+  border-radius: 15px;
+}
+
+/* TITULOS */
+.sec-title {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 6px 0 3px;
+}
+
+/* TABLA */
+.data-table td {
+  border: 1px solid #000;
+}
+
+.data-table td.lbl {
+  background: #eee;
+  font-size: 9.5px;
+  padding: 3px;
+}
+
+.data-table td.val input {
+  font-size: 10px;
+  padding: 3px;
+}
+
+/* DETALLE */
+.det-line {
+  border-bottom: 1px dotted #000;
+  height: 22px;
+}
+
+/* DOCUMENTOS */
+.doc-item {
+  border-bottom: 1px dotted #000;
+  font-size: 10px;
+}
+
+/* FIRMA */
+.firma-line {
+  border-top: 1px solid #000;
+}
+
+/* CORTE */
+.cut-line {
+  border-top: 2px dashed #000;
+  margin: 10px 0;
+}
+
+/* CARGO */
+.cargo-title {
+  font-size: 14px;
+  letter-spacing: 3px;
+}
+
+.cargo-field {
+  border: 1px solid #000;
+}
+
+.cargo-qr-box {
+  border: 2px solid #000;
+  border-radius: 20px;
+}
+
+  /* ── Toolbar ── */
+  .toolbar {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .btn-pdf {
+    background: #2e6b1e;
+    color: #fff;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-pdf:hover { background: #1e4e12; }
+  .btn-clear {
+    background: #fff;
+    color: #444;
+    border: 1px solid #aaa;
+    padding: 9px 16px;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-clear:hover { background: #f0f0f0; }
+
+  /* ── Hoja ── */
+  #documento {
+    width: 100%;
+    max-width: 760px;
+    background: #fff;
+    padding: 18px 20px 20px;
+    border: 1px solid #999;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.18);
+    font-size: 11px;
+    color: #000;
+  }
+
+  /* ══════════════════════════
+     CABECERA
+  ══════════════════════════ */
+  .cab {
+    display: flex;
+    align-items: stretch;
+    border: 1.5px solid #555;
+    margin-bottom: 10px;
+    min-height: 90px;
+  }
+
+  /* Logo */
+  .cab-logo {
+    width: 80px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1.5px solid #555;
+    padding: 6px;
+  }
+  .cab-logo img {
+    width: 68px; height: 68px;
+    object-fit: contain;
+  }
+  .cab-logo .logo-ph {
+    width: 68px; height: 68px;
+    border: 1px dashed #bbb;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; color: #bbb; text-align: center;
+  }
+
+  /* Bloque verde */
+  .cab-center {
+    flex: 1;
+    background: #5c9e30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border-right: 1.5px solid #555;
+  }
+  .cab-inst {
+    font-size: 9.5px;
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 0.3px;
+    line-height: 1.45;
+  }
+  .cab-tramite {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  /* QR cabecera — rectángulo grande con bordes muy redondeados */
+  .cab-qr {
+    width: 110px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+  }
+  .qr-box-header {
+    width: 90px;
+    height: 75px;
+    border: 2px solid #555;
+    border-radius: 16px;          /* <── bordes redondeados grandes */
+    background: #fff;
+  }
+
+  /* ── FUT label ── */
+  .fut-label {
+    display: inline-block;
+    border: 1.5px solid #222;
+    padding: 3px 10px;
+    font-size: 10.5px;
+    font-weight: bold;
+    margin-bottom: 9px;
+  }
+
+  /* ── Destinatario ── */
+  .destinatario {
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── SOLICITO ── */
+  .solicito-row {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #333;
+    padding: 4px 8px;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .solicito-row .lbl {
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .solicito-row input {
+    flex: 1; border: none; outline: none;
+    font-size: 11px; font-family: Arial, sans-serif;
+    background: transparent;
+  }
+
+  /* ── Sección títulos ── */
+  .sec-title {
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: underline;
+    margin-bottom: 5px;
+  }
+
+  /* ── Tabla datos solicitante ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  .data-table td { border: 1px solid #555; padding: 0; }
+  .data-table td.lbl {
+    padding: 4px 8px;
+    font-weight: bold;
+    font-size: 10px;
+    text-transform: uppercase;
+    background: #f4f4f4;
+    width: 44%;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .data-table td.val input {
+    width: 100%; border: none; outline: none;
+    padding: 4px 7px; font-size: 11px;
+    font-family: Arial, sans-serif; background: transparent;
+  }
+
+  /* ── Detalle ── */
+  .detalle-wrap { margin-bottom: 10px; }
+  .det-line {
+    border-bottom: 1px dotted #777;
+    min-height: 24px;
+    display: flex; align-items: flex-end;
+  }
+  .det-line input {
+    width: 100%; border: none; outline: none;
+    font-size: 11px; font-family: Arial, sans-serif;
+    background: transparent; padding: 2px 4px;
+  }
+
+  /* ── Documentos adjuntos ── */
+  .docs-wrap { margin-bottom: 10px; }
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 30px;
+  }
+  .doc-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px dotted #aaa;
+    min-height: 22px;
+    padding: 2px 0;
+    font-size: 10.5px;
+  }
+  .doc-num { font-weight: bold; min-width: 20px; }
+  .doc-paren { font-size: 10.5px; }
+  .doc-check {
+    width: 15px; height: 15px;
+    border: 1.5px solid #555;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 11px; font-weight: bold;
+    color: #1a6b23; flex-shrink: 0; user-select: none;
+  }
+  .doc-check.checked { background: #e8f5e9; }
+  .doc-lbl { font-weight: bold; }
+  input.doc-text {
+    flex: 1; border: none; border-bottom: 1px dotted #999;
+    outline: none; font-size: 10.5px;
+    font-family: Arial, sans-serif; background: transparent; min-width: 0;
+  }
+
+  /* ── Nota ── */
+  .nota {
+    font-size: 10px; line-height: 1.55;
+    margin-bottom: 8px; text-align: justify;
+  }
+
+  /* ── Lugar y fecha ── */
+  .lugar-fecha {
+    font-size: 10.5px; text-align: center;
+    margin-bottom: 24px;
+    display: flex; align-items: center;
+    justify-content: center; gap: 4px; flex-wrap: wrap;
+  }
+  .lugar-fecha input {
+    border: none; border-bottom: 1px solid #555;
+    outline: none; font-size: 10.5px;
+    font-family: Arial, sans-serif; text-align: center;
+    background: transparent; padding: 1px 3px;
+  }
+
+  /* ── Firma ── */
+  .firma-wrap {
+    display: flex; justify-content: flex-end;
+    padding-right: 18px; margin-bottom: 4px;
+  }
+  .firma-box { text-align: center; width: 150px; }
+  .firma-line { border-top: 1.5px solid #333; margin-bottom: 3px; }
+  .firma-lbl {
+    font-size: 10px; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* ── Corte ── */
+  .cut-line {
+    display: flex; align-items: center; gap: 0;
+    border-top: 2px dashed #444;
+    margin: 14px 0 10px; padding-top: 0;
+    position: relative;
+  }
+  .cut-line .scissor {
+    font-size: 20px; line-height: 1;
+    position: relative; top: -12px;
+    margin-right: 4px;
+  }
+
+  /* ══════════════════════════
+     CARGO
+  ══════════════════════════ */
+  .cargo-title {
+    font-size: 15px; font-weight: bold;
+    text-transform: uppercase; text-align: center;
+    letter-spacing: 3px; margin-bottom: 10px;
+  }
+
+  .cargo-body {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;       /* ambas columnas igual alto */
+  }
+
+  .cargo-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cargo-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid #555;
+    padding: 7px 10px;
+  }
+  .cargo-field label {
+    font-size: 10.5px; font-weight: bold;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .cargo-field input {
+    flex: 1; border: none; outline: none;
+    font-size: 11px; font-family: Arial, sans-serif;
+    background: transparent;
+  }
+
+  /* QR cargo — rectángulo grande bordes muy redondeados, mismo alto que los 2 campos */
+  .cargo-qr-box {
+    width: 130px;
+    flex-shrink: 0;
+    border: 2.5px solid #333;
+    border-radius: 22px;          /* <── muy redondeado como la imagen */
+    background: #fff;
+    min-height: 90px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    #documento { box-shadow: none; border: none; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn-clear" onclick="limpiarFormulario()">✕ Limpiar</button>
+  <button class="btn-pdf" onclick="descargarPDF()">⬇ Descargar PDF</button>
+</div>
+
+<div id="documento">
+
+  <!-- ══ CABECERA ══ -->
+  <div class="cab">
+    <div class="cab-logo">
+      <img src="../images/logo.jpg" alt="Logo"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="logo-ph" style="display:none;">ESCUDO</div>
+    </div>
+
+    <div class="cab-center">
+      <span class="cab-inst">MUNICIPALIDAD DISTRITAL DE ANDRÉS AVELINO<br>CÁCERES DORREGARAY</span>
+      <span class="cab-tramite">TRÁMITE &nbsp; DOCUMENTARIO</span>
+    </div>
+
+    <!-- QR: rectángulo grande con bordes muy redondeados -->
+    <div class="cab-qr">
+      <div class="qr-box-header"></div>
+    </div>
+  </div>
+
+  <!-- FUT -->
+  <div class="fut-label">FORMATO ÚNICO DE TRÁMITE (FUT)</div>
+
+  <!-- Destinatario -->
+  <p class="destinatario">SEÑOR ALCALDE DE LA MUNICIPALIDAD DISTRITAL ANDRES AVELINO CACERES DORREGARAY</p>
+
+  <!-- SOLICITO -->
+  <div class="solicito-row">
+    <span class="lbl">SOLICITO:</span>
+    <input type="text" id="solicito" placeholder="">
+  </div>
+
+  <!-- I. DATOS DEL SOLICITANTE -->
+  <p class="sec-title">I.- DATOS DEL SOLICITANTE:</p>
+  <table class="data-table">
+    <tr>
+      <td class="lbl">TITULAR (APELLIDOS Y NOMBRES)</td>
+      <td class="val"><input type="text" id="titular"></td>
+    </tr>
+    <tr>
+      <td class="lbl">REPRESENTANTE (APELLIDOS Y NOMBRES)</td>
+      <td class="val"><input type="text" id="representante"></td>
+    </tr>
+    <tr>
+      <td class="lbl">Nº DNI DEL SOLICITANTE</td>
+      <td class="val"><input type="text" id="dni" maxlength="8"></td>
+    </tr>
+    <tr>
+      <td class="lbl">DOMICILIO FISCAL DEL SOLICITANTE</td>
+      <td class="val"><input type="text" id="domicilio"></td>
+    </tr>
+    <tr>
+      <td class="lbl">N° TELÉFONO/CELULAR</td>
+      <td class="val"><input type="tel" id="telefono"></td>
+    </tr>
+    <tr>
+      <td class="lbl">CORREO ELECTRÓNICO</td>
+      <td class="val"><input type="email" id="correo"></td>
+    </tr>
+    <tr>
+      <td class="lbl">OTROS</td>
+      <td class="val"><input type="text" id="otros"></td>
+    </tr>
+  </table>
+
+  <!-- II. DETALLE -->
+  <p class="sec-title">II.- DETALLE DE LO SOLICITADO:</p>
+  <div class="detalle-wrap">
+    <div class="det-line"><input type="text"></div>
+    <div class="det-line"><input type="text"></div>
+    <div class="det-line"><input type="text"></div>
+    <div class="det-line"><input type="text"></div>
+    <div class="det-line"><input type="text"></div>
+    <div class="det-line"><input type="text"></div>
+  </div>
+
+  <!-- III. DOCUMENTOS ADJUNTOS -->
+  <p class="sec-title">III.- DOCUMENTOS ADJUNT0S:</p>
+  <div class="docs-wrap">
+    <div class="docs-grid">
+      <div>
+        <div class="doc-item">
+          <span class="doc-num">1.-</span>
+          <span class="doc-lbl">COPIA DE DNI</span>
+          <span style="margin-left:6px; display:flex; align-items:center; gap:2px;">
+            <span class="doc-paren">(</span>
+            <div class="doc-check" id="chk1" onclick="toggleCheck('chk1')"></div>
+            <span class="doc-paren">)</span>
+          </span>
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">2.-</span>
+          <span class="doc-lbl">RECIBO DE PAGO</span>
+          <span style="margin-left:6px; display:flex; align-items:center; gap:2px;">
+            <span class="doc-paren">(</span>
+            <div class="doc-check" id="chk2" onclick="toggleCheck('chk2')"></div>
+            <span class="doc-paren">)</span>
+          </span>
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">3.-</span>
+          <input type="text" class="doc-text">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">4.-</span>
+          <input type="text" class="doc-text">
+        </div>
+      </div>
+      <div>
+        <div class="doc-item">
+          <span class="doc-num">5.-</span>
+          <input type="text" class="doc-text">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">6.-</span>
+          <input type="text" class="doc-text">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">7.-</span>
+          <input type="text" class="doc-text">
+        </div>
+        <div class="doc-item">
+          <span class="doc-num">8.-</span>
+          <input type="text" class="doc-text">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nota -->
+  <p class="nota">
+    <strong>NOTA:</strong> En caso de no cumplir la documentación observada en el plazo de dos días hábiles,
+    se tendrá como no presentada su petición (Art. 125. Ley de procedimiento Administrativo General).
+  </p>
+
+  <!-- Lugar y fecha -->
+  <div class="lugar-fecha">
+    Andrés Avelino Cáceres Dorregaray,
+    <input type="text" id="lugar-dia" style="width:30px;" placeholder="___">
+    de
+    <input type="text" id="lugar-mes" style="width:130px;" placeholder="______________________">
+    del 2025.
+  </div>
+
+  <!-- Firma -->
+  <div class="firma-wrap">
+    <div class="firma-box">
+      <div class="firma-line"></div>
+      <div class="firma-lbl">FIRMA</div>
+    </div>
+  </div>
+
+  <!-- Línea de corte -->
+  <div class="cut-line">
+    <span class="scissor">✂</span>
+  </div>
+
+  <!-- CARGO -->
+  <p class="cargo-title">CARGO</p>
+  <div class="cargo-body">
+    <div class="cargo-fields">
+      <div class="cargo-field">
+        <label>SOLICITANTE:</label>
+        <input type="text" id="cargo-solicitante">
+      </div>
+      <div class="cargo-field">
+        <label>SOLICITA:</label>
+        <input type="text" id="cargo-solicita">
+      </div>
+    </div>
+    <!-- QR cargo: rectángulo grande con bordes muy redondeados -->
+    <div class="cargo-qr-box"></div>
+  </div>
+
+</div>
+
+<script>
+function toggleCheck(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('checked');
+  el.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function descargarPDF() {
+  const el = document.getElementById('documento');
+  const opt = {
+    margin: [8, 8, 8, 8],
+    filename: 'FUT_Municipalidad_MAACD.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save();
+}
+
+function limpiarFormulario() {
+  if (!confirm('¿Deseas limpiar todos los campos?')) return;
+  document.querySelectorAll('#documento input').forEach(i => i.value = '');
+  document.querySelectorAll('.doc-check').forEach(el => {
+    el.classList.remove('checked');
+    el.textContent = '';
+  });
+}
+
+document.getElementById('titular').addEventListener('input', function() {
+  document.getElementById('cargo-solicitante').value = this.value;
+});
+document.getElementById('solicito').addEventListener('input', function() {
+  document.getElementById('cargo-solicita').value = this.value;
+});
+
+window.addEventListener('load', function() {
+  const params = new URLSearchParams(window.location.search);
+  const map = {
+    'nombres_solicitante': 'titular',
+    'representante': 'representante',
+    'dni_ruc': 'dni',
+    'direccion': 'domicilio',
+    'telefono_whatsapp': 'telefono',
+    'email': 'correo',
+    'solicitud': 'solicito'
+  };
+  for (let [p, id] of Object.entries(map)) {
+    const v = params.get(p);
+    if (v) { const f = document.getElementById(id); if (f) f.value = decodeURIComponent(v); }
+  }
+  const detalle = params.get('detalle');
+  if (detalle) {
+    const lines = document.querySelectorAll('.det-line input');
+    if (lines.length) lines[0].value = decodeURIComponent(detalle);
+  }
+});
+</script>
+</body>
+</html>

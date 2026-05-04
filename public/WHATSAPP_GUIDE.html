@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de WhatsApp - Sistema de Notificaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 900px;
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #25d366;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #25d366;
+            margin-top: 30px;
+            font-weight: 600;
+        }
+        .step-card {
+            background: #f8f9fa;
+            border-left: 5px solid #25d366;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #2d3436;
+            color: #81ecec;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New';
+            font-size: 13px;
+            margin: 10px 0;
+        }
+        .status-badge {
+            display: inline-block;
+            background: #25d366;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .example-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .button-demo {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .btn-demo {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .btn-whatsapp {
+            background: #25d366;
+            color: white;
+            border: 2px solid #25d366;
+        }
+        .btn-whatsapp:hover {
+            background: #1fa855;
+            transform: translateY(-2px);
+        }
+        .message-preview {
+            background: #e7f5ff;
+            border: 2px dashed #0066cc;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 14px;
+            font-family: 'Segoe UI';
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 20px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #25d366;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .timer {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5 mb-5">
+        <h1>
+            <i class="fab fa-whatsapp"></i> Sistema de Notificaciones WhatsApp
+        </h1>
+        
+        <div style="text-align: center;">
+            <span class="status-badge">
+                <i class="fas fa-check-circle"></i> COMPLETAMENTE FUNCIONAL
+            </span>
+        </div>
+
+        <h2><i class="fas fa-lightbulb"></i> ¿Cómo Funciona?</h2>
+        <p>El sistema genera un enlace de WhatsApp Web con el mensaje prellenado. Cuando el admin hace clic en el botón, se abre automáticamente WhatsApp con:</p>
+        <ul class="feature-list">
+            <li>Número del cliente ya cargado</li>
+            <li>Mensaje personalizado según el estado</li>
+            <li>Código de seguimiento incluido</li>
+            <li>No requiere instalar nada adicional</li>
+        </ul>
+
+        <h2><i class="fas fa-cogs"></i> Configuración Actual</h2>
+        <div class="step-card">
+            <strong>✅ WhatsApp Habilitado:</strong> true<br>
+            <strong>✅ Teléfono Admin:</strong> +51956761889<br>
+            <strong>✅ Notificaciones Habilitadas:</strong> true
+        </div>
+
+        <h2><i class="fas fa-play-circle"></i> Pasos para Probar</h2>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 1: Entrar a una solicitud</h5>
+            <p>Abre la sección de Solicitudes y selecciona cualquier solicitud que esté en estado "Recibida" o "En Revisión".</p>
+        </div>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 2: Cambiar estado</h5>
+            <p>En el panel derecho "Procesar Solicitud", selecciona un nuevo estado:</p>
+            <code style="background: #f0f0f0; padding: 5px 10px; border-radius: 5px;">
+                • En Revisión<br>
+                • Aprobar<br>
+                • Rechazar
+            </code>
+        </div>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 3: Agregar observaciones (opcional)</h5>
+            <p>Incluye cualquier comentario relevante para el cliente.</p>
+        </div>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 4: Hacer clic en "Guardar + WhatsApp"</h5>
+            <p>Presiona el botón verde con el icono de WhatsApp.</p>
+        </div>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 5: Esperar <span class="timer">1 segundo</span></h5>
+            <p>Se abrirá automáticamente WhatsApp Web en una nueva pestaña con el mensaje ya prellenado.</p>
+        </div>
+
+        <div class="step-card">
+            <h5><i class="fas fa-circle" style="color: #667eea;"></i> Paso 6: Enviar mensaje</h5>
+            <p>Revisa el mensaje y envía haciendo clic en el botón de enviar en WhatsApp.</p>
+        </div>
+
+        <h2><i class="fas fa-envelope-open"></i> Ejemplo de Mensaje</h2>
+        <div class="message-preview">✅ Actualización de tu trámite
+
+Hola Juan Pérez,
+
+Tu solicitud ha sido Aprobada
+
+📋 Código: CERT-2024-001
+📝 Tipo: ITSE Anexo 13
+📅 Fecha: 02/05/2026 14:30
+
+📌 Observaciones:
+Todo está en orden.
+
+🔍 Seguir trámite: http://localhost:8000/tramite/seguimiento?codigo=CERT-2024-001
+
+---
+Municipalidad Distrital de Andrés Avelino Cáceres
+        </div>
+
+        <h2><i class="fas fa-buttons"></i> Botones Disponibles</h2>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th width="30%">Botón</th>
+                    <th width="70%">Función</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><i class="fas fa-envelope"></i> Guardar + Email</td>
+                    <td>Envía notificación solo por Email (Gmail SMTP)</td>
+                </tr>
+                <tr>
+                    <td><i class="fab fa-whatsapp"></i> Guardar + WhatsApp</td>
+                    <td>Abre WhatsApp Web con mensaje prellenado</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-share-alt"></i> Guardar + Ambos</td>
+                    <td>Envía Email Y abre WhatsApp</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-save"></i> Solo Guardar</td>
+                    <td>Solo guarda el estado sin notificaciones</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><i class="fas fa-database"></i> Registro de Notificaciones</h2>
+        <p>Todas las notificaciones se registran en la tabla <code>notification_logs</code>:</p>
+        <div class="code-block">
+{
+  "solicitud_id": 123,
+  "canal": "whatsapp",
+  "destinatario": "+51987654321",
+  "mensaje": "✅ Actualización de tu trámite...",
+  "estado": "preparado",
+  "cambio_estado": "aprobado",
+  "created_at": "2026-05-02 14:30:45"
+}
+        </div>
+
+        <h2><i class="fas fa-info-circle"></i> Información Importante</h2>
+        <div class="warning-box">
+            <strong><i class="fas fa-exclamation-triangle"></i> Requisitos:</strong>
+            <ul>
+                <li>Tener WhatsApp instalado en el teléfono del cliente</li>
+                <li>El navegador debe permitir abrir WhatsApp Web</li>
+                <li>Es necesario tener sesión activa en WhatsApp Web</li>
+            </ul>
+        </div>
+
+        <div class="example-box">
+            <strong><i class="fas fa-check-circle"></i> Ventajas:</strong>
+            <ul>
+                <li>✅ Sin API pagadas (100% gratuito)</li>
+                <li>✅ Mensaje completamente personalizado</li>
+                <li>✅ Sin dependencias adicionales</li>
+                <li>✅ Control total del mensaje</li>
+                <li>✅ Registro de todas las notificaciones</li>
+            </ul>
+        </div>
+
+        <h2><i class="fas fa-code"></i> Archivos Modificados</h2>
+        <div class="code-block">
+app/Services/NotificationService.php
+app/Http/Controllers/SolicitudController.php
+app/Mail/CambioEstatoSolicitud.php
+resources/views/solicitudes/show.blade.php
+config/services.php
+.env
+database/migrations/2026_05_02_150000_create_notification_logs_table.php
+app/Models/NotificationLog.php
+        </div>
+
+        <h2><i class="fas fa-question-circle"></i> Preguntas Frecuentes</h2>
+        <div class="accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        ¿Puedo personalizar el mensaje?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent=".accordion">
+                    <div class="accordion-body">
+                        Sí, el mensaje se genera automáticamente según el estado. Puedes modificar la función 
+                        <code>generarMensajeWhatsapp()</code> en NotificationService.php
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        ¿Qué pasa si el cliente no tiene el número en WhatsApp?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent=".accordion">
+                    <div class="accordion-body">
+                        WhatsApp ofrecerá agregar el contacto automáticamente cuando se abra la conversación.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        ¿Se guarda el historial de mensajes?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent=".accordion">
+                    <div class="accordion-body">
+                        Sí, el intento de notificación se registra en la tabla notification_logs con el estado 
+                        "preparado" (el usuario decidió si envió o no desde WhatsApp).
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h4 style="color: #25d366; margin-bottom: 15px;">
+                <i class="fas fa-rocket"></i> ¡Sistema Listo para Usar!
+            </h4>
+            <p style="margin: 0; color: #666;">
+                Ya puedes empezar a enviar notificaciones por WhatsApp sin configuraciones adicionales.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

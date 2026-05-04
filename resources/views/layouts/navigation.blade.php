@@ -30,9 +30,8 @@
                     <x-slot name="content">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                            <x-dropdown-link :href="route('logout.simple')"
+                                    onclick="if(confirm('¿Salir de la sesión?')) window.location.href='{{ route('logout.simple') }}'; return false;">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
@@ -64,11 +63,9 @@
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
             <div class="mt-3 space-y-1">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
+                <form method="GET" action="{{ route('logout.simple') }}">
+                    <x-responsive-nav-link :href="route('logout.simple')"
+                            onclick="if(confirm('¿Salir de la sesión?')) this.closest('form').submit(); return false;">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
                 </form>
