@@ -105,17 +105,18 @@
     .filter-card .form-control,
     .filter-card .form-select {
         font-size: .85rem;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border) !important;
         border-radius: var(--radius-sm);
         padding: .45rem .75rem;
         color: var(--text-main);
-        background: var(--bg);
+        background: var(--bg) !important;
         transition: border-color .15s, box-shadow .15s;
+        box-shadow: none !important;
     }
     .filter-card .form-control:focus,
     .filter-card .form-select:focus {
-        border-color: var(--brand);
-        box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        border-color: var(--brand) !important;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.12) !important;
         outline: none;
     }
     .btn-search {
@@ -169,6 +170,7 @@
         width: 100%;
         border-collapse: collapse;
         font-size: .845rem;
+        margin-bottom: 0 !important;
     }
     .cert-table thead th {
         background: var(--bg);
@@ -178,14 +180,20 @@
         text-transform: uppercase;
         letter-spacing: .06em;
         padding: .7rem 1rem;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--border) !important;
         white-space: nowrap;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
     }
     .cert-table tbody td {
         padding: .8rem 1rem;
         border-bottom: 1px solid var(--border);
         color: var(--text-main);
         vertical-align: middle;
+        border-left: none !important;
+        border-right: none !important;
+        border-top: none !important;
     }
     .cert-table tbody tr:last-child td { border-bottom: none; }
     .cert-table tbody tr:hover td { background: var(--bg); }
@@ -232,6 +240,7 @@
     }
     .badge-recibido  { background: #3b82f6; color: #fff; border: 1px solid #1d4ed8; }
     .badge-revision  { background: #f59e0b; color: #fff; border: 1px solid #d97706; }
+    .badge-aceptado  { background: #06b6d4; color: #fff; border: 1px solid #0891b2; }
     .badge-aprobado  { background: #16a34a; color: #fff; border: 1px solid #15803d; }
     .badge-rechazado { background: #dc2626; color: #fff; border: 1px solid #b91c1c; }
 
@@ -308,6 +317,8 @@
 
     /* ─── Mobile cards ─── */
     @media (max-width: 768px) {
+        .page-header { flex-wrap: wrap; gap: .75rem; }
+        .filter-card { padding: .75rem; }
         .cert-table, .cert-table thead, .cert-table tbody,
         .cert-table th, .cert-table td, .cert-table tr { display: block; }
 
@@ -343,7 +354,6 @@
             flex: 0 0 42%;
         }
         .action-btns { justify-content: flex-end; }
-        .page-header { flex-wrap: wrap; gap: .75rem; }
     }
 
     .table-wrapper { overflow-x: auto; }
@@ -365,24 +375,25 @@
 <!-- Filters -->
 <div class="filter-card">
     <form action="{{ route('solicitudes.index') }}" method="GET">
-        <div class="row g-3">
-            <div class="col-md-5">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3 col-12">
                 <label class="form-label">Buscar</label>
                 <input type="text" name="buscar" class="form-control"
                     placeholder="Código, nombre, DNI..."
                     value="{{ request('buscar') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2 col-6">
                 <label class="form-label">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
                     <option value="recibido" {{ request('estado') == 'recibido' ? 'selected' : '' }}>Recibido</option>
                     <option value="en_revision" {{ request('estado') == 'en_revision' ? 'selected' : '' }}>En Revisión</option>
+                    <option value="aceptado" {{ request('estado') == 'aceptado' ? 'selected' : '' }}>Aceptado</option>
                     <option value="aprobado" {{ request('estado') == 'aprobado' ? 'selected' : '' }}>Aprobado</option>
                     <option value="rechazado" {{ request('estado') == 'rechazado' ? 'selected' : '' }}>Rechazado</option>
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2 col-6">
                 <label class="form-label">Tipo</label>
                 <select name="tipo" class="form-select">
                     <option value="">Todos</option>
@@ -391,9 +402,17 @@
                     <option value="evento_publico" {{ request('tipo') == 'evento_publico' ? 'selected' : '' }}>Evento</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2 align-items-end">
+            <div class="col-md-2 col-6">
+                <label class="form-label">Desde</label>
+                <input type="date" name="fecha_desde" class="form-control" value="{{ request('fecha_desde') }}">
+            </div>
+            <div class="col-md-2 col-6">
+                <label class="form-label">Hasta</label>
+                <input type="date" name="fecha_hasta" class="form-control" value="{{ request('fecha_hasta') }}">
+            </div>
+            <div class="col-md-1 col-12 d-flex gap-1">
                 <button type="submit" class="btn-search" title="Buscar">
-                    <i class="fas fa-search"></i> Buscar
+                    <i class="fas fa-search"></i>
                 </button>
                 <a href="{{ route('solicitudes.index') }}" class="btn-clear" title="Limpiar">
                     <i class="fas fa-times"></i>
@@ -455,15 +474,19 @@
                         {{ $solicitud->telefono_whatsapp }}
                     </td>
                     <td data-label="Estado">
-                        <span class="badge-estado @if($solicitud->estado == 'recibido') badge-recibido @elseif($solicitud->estado == 'en_revision') badge-revision @elseif($solicitud->estado == 'aprobado') badge-aprobado @else badge-rechazado @endif">
+                        <span class="badge-estado @if($solicitud->estado == 'recibido') badge-recibido @elseif($solicitud->estado == 'en_revision') badge-revision @elseif($solicitud->estado == 'aceptado') badge-aceptado @elseif($solicitud->estado == 'aprobado') badge-aprobado @elseif($solicitud->estado == 'rechazado') badge-rechazado @else badge-rechazado @endif">
                             @if($solicitud->estado == 'recibido')
                                 Recibido
                             @elseif($solicitud->estado == 'en_revision')
-                                Revisión
+                                En Revisión
+                            @elseif($solicitud->estado == 'aceptado')
+                                Aceptado
                             @elseif($solicitud->estado == 'aprobado')
                                 Aprobado
-                            @else
+                            @elseif($solicitud->estado == 'rechazado')
                                 Rechazado
+                            @else
+                                Desconocido
                             @endif
                         </span>
                     </td>
@@ -473,9 +496,19 @@
                             <a href="{{ route('solicitudes.show', $solicitud) }}" class="btn-action view" title="Ver detalles">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            @if($solicitud->estado == 'aprobado')
-                                <a href="#" class="btn-action mail" title="Ver certificado">
-                                    <i class="fas fa-download"></i>
+                            @if($solicitud->estado == 'aprobado' && $solicitud->licencia_id)
+                                <a href="{{ route('licencias.show', $solicitud->licencia_id) }}" class="btn-action mail" title="Ver certificado">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            @endif
+                            @if($solicitud->email)
+                                <a href="mailto:{{ $solicitud->email }}" class="btn-action mail" title="Enviar email">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            @endif
+                            @if($solicitud->telefono_whatsapp)
+                                <a href="https://wa.me/{{ preg_replace('/\D/', '', $solicitud->telefono_whatsapp) }}" target="_blank" class="btn-action whatsapp" title="WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
                                 </a>
                             @endif
                         </div>

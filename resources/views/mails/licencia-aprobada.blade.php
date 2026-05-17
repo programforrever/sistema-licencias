@@ -156,8 +156,8 @@
                     <td>{{ $licencia->fecha_emision ? \Carbon\Carbon::parse($licencia->fecha_emision)->format('d/m/Y') : '-' }}</td>
                 </tr>
                 <tr>
-                    <td>Vigencia</td>
-                    <td>{{ $licencia->vigencia ?? '2 años' }}</td>
+                    <td>{{ $es_evento ? 'Fecha del Evento' : 'Vigencia' }}</td>
+                    <td>{{ $es_evento ? $fecha_evento : ($licencia->vigencia ?? '2 años') }}</td>
                 </tr>
             </table>
 
@@ -167,7 +167,11 @@
                 <ul>
                     <li>Su <strong>Certificado ITSE</strong> ha sido generado y se adjunta a este correo en formato PDF</li>
                     <li>Conserve este documento para sus registros</li>
-                    <li>El certificado tiene una vigencia de <strong>{{ $licencia->vigencia ?? '2 años' }}</strong></li>
+                    @if($es_evento)
+                        <li>Certificado válido para el evento de fecha <strong>{{ $fecha_evento }}</strong></li>
+                    @else
+                        <li>El certificado tiene una vigencia de <strong>{{ $licencia->vigencia ?? '2 años' }}</strong></li>
+                    @endif
                     <li>En caso de consultas, contáctenos a través de nuestros canales de atención</li>
                 </ul>
             </div>

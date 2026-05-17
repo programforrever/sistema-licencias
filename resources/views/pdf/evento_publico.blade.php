@@ -224,9 +224,12 @@
             <td class="campo-valor">
                 <span class="linea-valor">
                     {{ $licencia->horario_fin }} horas DEL DÍA
-                    {{ \Carbon\Carbon::parse($licencia->fecha_evento)->format('d') }} DE
-                    {{ strtoupper(\Carbon\Carbon::parse($licencia->fecha_evento)->locale('es')->monthName) }} DEL
-                    {{ \Carbon\Carbon::parse($licencia->fecha_evento)->format('Y') }}
+                    @php
+                        $fechaFin = \Carbon\Carbon::parse($licencia->fecha_evento)->addDays($licencia->dias_evento - 1);
+                    @endphp
+                    {{ $fechaFin->format('d') }} DE
+                    {{ strtoupper($fechaFin->locale('es')->monthName) }} DEL
+                    {{ $fechaFin->format('Y') }}
                 </span>
             </td>
         </tr>

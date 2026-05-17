@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sistema ITSE M.A.A.C.D</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/fontawesome.min.css') }}" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('images/logo_muni.png') }}">
     <style>
         :root {
@@ -400,6 +401,8 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
     </style>
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -463,6 +466,19 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
             Certificados
         </a>
 
+        <a href="{{ route('licencias-historicas.index') }}"
+           class="{{ request()->routeIs('licencias-historicas.*') ? 'active' : '' }}">
+            <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"
+                      stroke="currentColor" stroke-width="1.3" fill="none"/>
+                <path d="M4 6l2 2 4-4M4 10h6"
+                      stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="3" r="1.2"
+                        fill="currentColor" opacity=".5"/>
+            </svg>
+            Hist. Licencias
+        </a>
+
         <a href="{{ route('solicitudes.index') }}"
            class="{{ request()->routeIs('solicitudes.*') ? 'active' : '' }}">
             <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
@@ -505,6 +521,19 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
                       stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
             </svg>
             Actividades
+        </a>
+
+        <a href="{{ route('admin.signatures.index') }}"
+           class="{{ request()->routeIs('admin.signatures.*') ? 'active' : '' }}">
+            <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
+                <path d="M2 13.5c0-.83.67-1.5 1.5-1.5h9c.83 0 1.5.67 1.5 1.5"
+                      stroke="currentColor" stroke-width="1.3"/>
+                <circle cx="8" cy="5" r="3"
+                        stroke="currentColor" stroke-width="1.3" fill="none"/>
+                <path d="M5.5 11c-.5-.3-.8-.8-.8-1.4 0-.8.7-1.5 1.5-1.5h4.6c.8 0 1.5.7 1.5 1.5 0 .6-.3 1.1-.8 1.4"
+                      stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Firmas Digitales
         </a>
 
         <!-- Herramientas -->
@@ -584,6 +613,239 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
 
 </div>
 <!-- ── FIN SIDEBAR ──────────────────────────────────────────────── -->
+
+<!-- SISTEMA DE NOTIFICACIONES EN TIEMPO REAL (Polling) -->
+<script>
+    // ===== POLLING DE NOTIFICACIONES =====
+    const NotificationPoller = {
+        apiUrl: '{{ route("api.notificaciones.nuevas-solicitudes") }}',
+        interval: 5000, // 5 segundos
+        timerId: null,
+        lastCount: 0,
+
+        init() {
+            console.log('✓ Sistema de notificaciones inicializado');
+            // Esperar a que el DOM esté completamente listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.setupEventListeners();
+                });
+            } else {
+                this.setupEventListeners();
+            }
+            this.checkNotifications(); // Chequear inmediatamente
+            this.startPolling();
+        },
+
+        setupEventListeners() {
+            console.log('🔧 Configurando event listeners...');
+            const notifBtn = document.getElementById('notif-btn');
+            const notifModal = document.getElementById('notif-modal');
+            const notifModalClose = document.getElementById('notif-modal-close');
+
+            console.log('notifBtn:', notifBtn);
+            console.log('notifModal:', notifModal);
+            console.log('notifModalClose:', notifModalClose);
+
+            if (notifBtn) {
+                notifBtn.addEventListener('click', (e) => {
+                    console.log('🔔 Click en campanita');
+                    e.stopPropagation();
+                    const modal = document.getElementById('notif-modal');
+                    console.log('Modal actual:', modal);
+                    console.log('Display actual:', modal?.style.display);
+                    if (modal.style.display === 'none' || modal.style.display === '') {
+                        console.log('Abriendo modal...');
+                        modal.style.display = 'flex';
+                    } else {
+                        console.log('Cerrando modal...');
+                        modal.style.display = 'none';
+                    }
+                });
+            } else {
+                console.warn('⚠️ No se encontró #notif-btn');
+            }
+
+            if (notifModalClose) {
+                notifModalClose.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const modal = document.getElementById('notif-modal');
+                    modal.style.display = 'none';
+                });
+            } else {
+                console.warn('⚠️ No se encontró #notif-modal-close');
+            }
+
+            // Cerrar modal al hacer click fuera
+            document.addEventListener('click', (e) => {
+                const modal = document.getElementById('notif-modal');
+                const btn = document.getElementById('notif-btn');
+                if (modal && btn && modal.style.display !== 'none') {
+                    if (!modal.contains(e.target) && !btn.contains(e.target)) {
+                        modal.style.display = 'none';
+                    }
+                }
+            });
+        },
+
+        startPolling() {
+            this.timerId = setInterval(() => this.checkNotifications(), this.interval);
+        },
+
+        stopPolling() {
+            if (this.timerId) clearInterval(this.timerId);
+        },
+
+        async checkNotifications() {
+            try {
+                const response = await fetch(this.apiUrl);
+                const data = await response.json();
+
+                if (data.success) {
+                    this.updateUI(data.solicitudes, data.total);
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        },
+
+        updateUI(solicitudes, total) {
+            const badge = document.getElementById('notif-badge');
+            const container = document.getElementById('notif-container');
+
+            // Actualizar badge
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : total;
+                badge.style.display = 'block';
+
+                // Notificación visual si es nuevo
+                if (total > this.lastCount) {
+                    this.playNotificationSound();
+                    this.showBrowserNotification(total);
+                }
+            } else {
+                badge.style.display = 'none';
+            }
+
+            this.lastCount = total;
+            this.renderModal(solicitudes, total);
+        },
+
+        renderModal(solicitudes, total) {
+            const modalBody = document.getElementById('notif-modal-body');
+
+            if (total === 0) {
+                modalBody.innerHTML = `
+                    <div class="notif-empty">
+                        <div class="notif-empty-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <p>No hay nuevas solicitudes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            solicitudes.forEach(solicitud => {
+                const tipoClass = {
+                    'ITSE 13': 'itse-13',
+                    'ITSE 14': 'itse-14',
+                    'Evento Público': 'evento'
+                }[solicitud.tipo] || 'evento';
+
+                const tipoIcon = {
+                    'ITSE 13': 'fa-briefcase',
+                    'ITSE 14': 'fa-industry',
+                    'Evento Público': 'fa-calendar-alt'
+                }[solicitud.tipo] || 'fa-file';
+
+                html += `
+                    <div class="notif-item">
+                        <div class="notif-item-header">
+                            <span class="notif-item-tipo ${tipoClass}">
+                                <i class="fas ${tipoIcon}"></i>
+                                ${solicitud.tipo}
+                            </span>
+                            <span class="notif-item-fecha">${solicitud.fecha}</span>
+                        </div>
+                        <div class="notif-item-codigo">#${solicitud.codigo}</div>
+                        <div class="notif-item-titulo">${this.escapeHtml(solicitud.titulo)}</div>
+                        <div class="notif-item-solicitante">
+                            <strong>Solicitante:</strong> ${this.escapeHtml(solicitud.solicitante)}
+                        </div>
+                        <a href="${solicitud.url}" class="notif-item-btn">
+                            <i class="fas fa-arrow-right" style="margin-right: 0.5rem;\"></i>Ir a Atender
+                        </a>
+                    </div>
+                `;
+            });
+
+            modalBody.innerHTML = html;
+        },
+
+        playNotificationSound() {
+            // Sonido simple usando Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                // Silenciosamente ignorar si no está soportado
+            }
+        },
+
+        showBrowserNotification(total) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Nuevas Solicitudes', {
+                    body: `Tienes ${total} solicitud(es) nueva(s) por atender`,
+                    icon: '{{ asset('images/logo_muni.png') }}',
+                    tag: 'solicitudes-notif',
+                    requireInteraction: false
+                });
+            }
+        },
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    };
+
+    // Solicitar permisos de notificación del navegador
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    // Iniciar polling cuando la página cargue
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.notificationPollerStarted) {
+            NotificationPoller.init();
+            window.notificationPollerStarted = true;
+        }
+    });
+    
+    // Si el DOM ya está listo, iniciar inmediatamente
+    if (document.readyState !== 'loading') {
+        if (!window.notificationPollerStarted) {
+            NotificationPoller.init();
+            window.notificationPollerStarted = true;
+        }
+    }
+</script>
 
 
 <!-- Main Content -->
@@ -703,6 +965,26 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
     border: 1.5px solid var(--topbar-bg);
     pointer-events: none;
 }
+.notif-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
+    border: 2px solid var(--topbar-bg);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    animation: badge-pulse 2s infinite;
+}
+@keyframes badge-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
 
 /* Separador vertical */
 .topbar .tb-divider {
@@ -768,6 +1050,264 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
     opacity: 0.6;
 }
 
+/* Modal Flotante de Notificaciones */
+.notif-modal {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 380px;
+    max-height: 600px;
+    background: rgba(15, 23, 42, 0.98);
+    border: 2px solid rgba(0, 212, 255, 0.4);
+    border-radius: 20px;
+    box-shadow: 
+        0 0 20px rgba(0, 212, 255, 0.2),
+        0 8px 32px rgba(0, 0, 0, 0.8),
+        inset 0 0 20px rgba(0, 212, 255, 0.02);
+    z-index: 1099;
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.3s ease-out, neonGlow 2s ease-in-out infinite;
+    backdrop-filter: blur(15px);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes neonGlow {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px rgba(0, 212, 255, 0.2),
+            0 8px 32px rgba(0, 0, 0, 0.8),
+            inset 0 0 20px rgba(0, 212, 255, 0.02);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px rgba(0, 212, 255, 0.35),
+            0 8px 32px rgba(0, 0, 0, 0.8),
+            inset 0 0 20px rgba(0, 212, 255, 0.05);
+    }
+}
+
+.notif-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+    background: rgba(15, 23, 42, 0.9);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 18px 18px 0 0;
+}
+
+.notif-modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #00d4ff;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+}
+
+.notif-modal-header i {
+    font-size: 1.3rem;
+}
+
+.notif-modal-close {
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    color: #00d4ff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.notif-modal-close:hover {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.notif-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.notif-item {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.notif-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #00d4ff, #3b82f6);
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.notif-item:hover {
+    background: rgba(0, 212, 255, 0.03);
+    border-left-color: #00d4ff;
+}
+
+.notif-item:hover::before {
+    opacity: 1;
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.notif-item-tipo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid;
+}
+
+.notif-item-tipo.itse-13 {
+    background: rgba(59, 130, 246, 0.12);
+    color: #5ba3f5;
+    border-color: rgba(59, 130, 246, 0.35);
+}
+
+.notif-item-tipo.itse-14 {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ff6b6b;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.notif-item-tipo.evento {
+    background: rgba(0, 212, 255, 0.12);
+    color: #00d4ff;
+    border-color: rgba(0, 212, 255, 0.35);
+}
+
+.notif-item-fecha {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.notif-item-fecha::before {
+    content: '🕐';
+}
+
+.notif-item-titulo {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.35rem;
+    word-break: break-word;
+    text-shadow: 0 0 6px rgba(0, 212, 255, 0.2);
+}
+
+.notif-item-solicitante {
+    font-size: 0.85rem;
+    color: rgba(160, 174, 192, 0.8);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.notif-item-codigo {
+    font-size: 0.8rem;
+    color: rgba(0, 212, 255, 0.6);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.notif-item-btn {
+    display: block;
+    width: 100%;
+    padding: 0.65rem;
+    background: rgba(0, 212, 255, 0.1);
+    color: #00d4ff;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: 0.3px;
+}
+
+.notif-item-btn:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.25), 0 0 15px rgba(0, 212, 255, 0.15);
+}
+
+.notif-empty {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.notif-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .topbar { padding: 0 15px; height: 52px; }
@@ -823,8 +1363,8 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
         </button>
 
         {{-- Notificaciones --}}
-        <div class="tb-notif">
-            <button class="tb-icon-btn" title="Notificaciones">
+        <div class="tb-notif" id="notif-container">
+            <button class="tb-icon-btn" id="notif-btn" title="Notificaciones" style="position: relative;">
                 <svg viewBox="0 0 16 16" fill="none">
                     <path d="M8 1.5a4.5 4.5 0 00-4.5 4.5v3L2 11h12l-1.5-2V6A4.5 4.5 0 008 1.5z"
                           stroke="currentColor" stroke-width="1.3"
@@ -832,11 +1372,9 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
                     <path d="M6.5 11v.5a1.5 1.5 0 003 0V11"
                           stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                 </svg>
+                <!-- Badge de contador -->
+                <span id="notif-badge" class="notif-badge" style="display: none;">0</span>
             </button>
-            @php $totalNoticias = \App\Models\Solicitud::where('estado','recibido')->count(); @endphp
-            @if($totalNoticias > 0)
-                <div class="tb-notif-dot"></div>
-            @endif
         </div>
 
         <div class="tb-divider"></div>
@@ -866,7 +1404,23 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
     </div>
 </div>
 
+<!-- Modal Flotante de Notificaciones -->
+<div id="notif-modal" class="notif-modal" style="display: none;">
+    <div class="notif-modal-header">
+        <h3><i class="fas fa-bell"></i> Nuevas Solicitudes</h3>
+        <button id="notif-modal-close" class="notif-modal-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="notif-modal-body" class="notif-modal-body">
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Cargando solicitudes...</p>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Mostrar mensajes de sesión con SweetAlert -->
@@ -1013,5 +1567,43 @@ function toggleSidebar() {
     overlay.classList.toggle('show');
 }
 </script>
+
+</body>
+</html>
+
+        'fa-school': '🏫',
+        'fa-gas-pump': '⛽',
+        'fa-download': '⬇️',
+        'fa-print': '🖨️',
+        'fa-copy': '📋',
+        'fa-check': '✅'
+    };
+
+<!-- Inicializar Select2 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar todos los selects con clase 'select2'
+        $('.select2').select2({
+            allowClear: true,
+            placeholder: '-- Seleccionar --',
+            width: '100%',
+            matcher: function(params, data) {
+                // Si no hay búsqueda, mostrar todos
+                if ($.trim(params.term) === '') {
+                    return data;
+                }
+                
+                // Buscar en el texto de la opción
+                if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                    return data;
+                }
+                
+                // Retornar null si no coincide
+                return null;
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

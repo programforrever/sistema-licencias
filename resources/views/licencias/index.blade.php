@@ -596,6 +596,17 @@
                                 <i class="fas fa-file-pdf"></i>
                             </a>
 
+                            {{-- Firmar --}}
+                            @if($licencia->signature_status === 'pendiente_firma' && auth()->check())
+                                <a href="{{ route('licencias.firmar', $licencia) }}" class="btn-action" style="border-color: #e9d5ff; color: #a855f7; background: #faf5ff;" title="Firmar certificado">
+                                    <i class="fas fa-pen-fancy"></i>
+                                </a>
+                            @elseif($licencia->signature_status === 'firmado')
+                                <span class="btn-action" style="border-color: #bbf7d0; color: #16a34a; background: #f0fdf4; cursor: default;" title="Certificado firmado">
+                                    <i class="fas fa-check-circle"></i>
+                                </span>
+                            @endif
+
                             {{-- Notificaciones --}}
                             @if($licencia->estado == 'aprobado' && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('ingeniero')))
                                 <form id="formCorreo-{{ $licencia->id }}" action="{{ route('licencias.enviar-correo', $licencia) }}" method="POST" class="d-inline">
@@ -620,7 +631,10 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalAprobar"
                                     data-id="{{ $licencia->id }}"
-                                    data-numero="{{ $licencia->numero_licencia }}">
+                                    data-numero="{{ $licencia->numero_licencia }}"
+                                    data-tipo="{{ $licencia->tipo_certificado }}"
+                                    data-fecha-evento="{{ $licencia->fecha_evento }}"
+                                    data-dias-evento="{{ $licencia->dias_evento ?? 1 }}">
                                     <i class="fas fa-check"></i>
                                 </button>
                             @endif
@@ -674,14 +688,17 @@
                 <div class="modal-body-custom">
                     <div class="cert-info">
                         Aprobando certificado: <strong id="numeroLicencia"></strong>
+                        <span id="tipoInfo" style="font-size: 0.85em; color: #666; margin-left: 1rem;"></span>
                     </div>
                     <div class="mb-3">
                         <label>Fecha de Emisión</label>
-                        <input type="date" name="fecha_emision" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="fecha_emision" id="fechaEmision" class="form-control" required>
+                        <small class="text-muted">Automática</small>
                     </div>
                     <div class="mb-0">
                         <label>Fecha de Vencimiento</label>
-                        <input type="date" name="fecha_vencimiento" class="form-control" required>
+                        <input type="date" name="fecha_vencimiento" id="fechaVencimiento" class="form-control" required>
+                        <small class="text-muted" id="vigenciaInfo">Automática</small>
                     </div>
                 </div>
                 <div class="modal-footer-custom">
@@ -698,8 +715,54 @@
 <script>
 document.getElementById('modalAprobar').addEventListener('show.bs.modal', function(e) {
     const btn = e.relatedTarget;
+    const tipo = btn.getAttribute('data-tipo');
+    const fechaEvento = btn.getAttribute('data-fecha-evento');
+    const diasEvento = parseInt(btn.getAttribute('data-dias-evento') || 1);
+    
     document.getElementById('numeroLicencia').textContent = btn.getAttribute('data-numero');
     document.getElementById('formAprobar').action = '/licencias/' + btn.getAttribute('data-id') + '/aprobar';
+    
+    // Calcular fechas automáticamente
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const fechaEmisionStr = `${year}-${month}-${day}`;
+    
+    let fechaVencimientoStr;
+    let vigenciaTexto;
+    
+    if (tipo === 'evento_publico') {
+        // Evento: vencimiento = fecha_evento + dias_evento - 1
+        const fechaEvt = new Date(fechaEvento);
+        const vencimiento = new Date(fechaEvt);
+        vencimiento.setDate(vencimiento.getDate() + diasEvento - 1);
+        
+        const vYear = vencimiento.getFullYear();
+        const vMonth = String(vencimiento.getMonth() + 1).padStart(2, '0');
+        const vDay = String(vencimiento.getDate()).padStart(2, '0');
+        fechaVencimientoStr = `${vYear}-${vMonth}-${vDay}`;
+        vigenciaTexto = `${diasEvento} día${diasEvento > 1 ? 's' : ''} (desde ${fechaEvento})`;
+    } else {
+        // ITSE 13 y 14: vencimiento = hoy + 2 años
+        const vencimiento = new Date(today);
+        vencimiento.setFullYear(vencimiento.getFullYear() + 2);
+        
+        const vYear = vencimiento.getFullYear();
+        const vMonth = String(vencimiento.getMonth() + 1).padStart(2, '0');
+        const vDay = String(vencimiento.getDate()).padStart(2, '0');
+        fechaVencimientoStr = `${vYear}-${vMonth}-${vDay}`;
+        vigenciaTexto = '2 años';
+    }
+    
+    // Llenar campos
+    document.getElementById('fechaEmision').value = fechaEmisionStr;
+    document.getElementById('fechaVencimiento').value = fechaVencimientoStr;
+    document.getElementById('vigenciaInfo').textContent = vigenciaTexto;
+    
+    // Mostrar tipo
+    const tipoLabel = tipo === 'evento_publico' ? 'Evento Público' : (tipo === 'anexo_13' ? 'ITSE Anexo 13' : 'ITSE Anexo 14');
+    document.getElementById('tipoInfo').textContent = `(${tipoLabel})`;
 });
 
 document.querySelectorAll('.btn-confirm-correo').forEach(btn => {

@@ -6,12 +6,32 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Trámite Online ITSE M.A..A.C.D</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome Local -->
+    <link href="{{ asset('css/fontawesome.min.css') }}" rel="stylesheet">
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('images/logo_muni.png') }}">
 
+    <!-- Fallback icons via CSS if FontAwesome fails -->
+    <style>
+        /* Icon display fallback */
+        i[class*="fas "], i[class*="fab "], i[class*="far "] {
+            display: inline-block;
+            font-family: 'FontAwesome';
+        }
+        
+        /* Ensure icons are visible */
+        i[class*="fa-"] {
+            font-style: normal;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+        .fa, .fas, .far, .fab, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fa-sharp { font-family: var(--fa-style-family,"Font Awesome 6 Free") !important; }
 
         :root {
             --brand:        #2563eb;
@@ -323,6 +343,230 @@
             color: #991b1b;
         }
 
+        /* SELECTOR DE DÍAS */
+        .dias-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .dias-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .dias-btn:hover {
+            border-color: var(--green-main);
+            background: #f0fff0;
+        }
+        
+        .dias-btn.activo {
+            background: var(--green-main);
+            border-color: var(--green-main);
+            color: white;
+            box-shadow: 0 4px 12px rgba(18, 150, 29, 0.3);
+        }
+
+        /* INPUT PERSONALIZADO DE DÍAS */
+        #dias-personalizado {
+            border: 2px solid var(--border) !important;
+            border-radius: 8px !important;
+            padding: 0.55rem 0.75rem !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            color: var(--text-main) !important;
+            background: var(--surface) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        #dias-personalizado:focus {
+            border-color: var(--green-main) !important;
+            box-shadow: 0 0 0 3px rgba(18, 150, 29, 0.12) !important;
+            outline: none !important;
+        }
+
+        #dias-personalizado::-webkit-outer-spin-button,
+        #dias-personalizado::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        #dias-personalizado[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* TICKET DE PAGO */
+        .ticket-pago {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px dashed var(--green-main);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .ticket-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--green-main);
+            margin-bottom: 15px;
+        }
+
+        .qr-container {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: var(--bg);
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 40px;
+        }
+
+        .yape-info {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .yape-info h6 {
+            color: #d97706;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .yape-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .yape-info .yape-numero {
+            font-size: 18px;
+            font-weight: 700;
+            color: #b45309;
+            margin: 10px 0;
+        }
+
+        .instrucciones-pago {
+            background: #eff6ff;
+            border-left: 4px solid var(--brand);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .instrucciones-pago h6 {
+            color: var(--brand);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .instrucciones-pago ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .instrucciones-pago li {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #1e40af;
+        }
+
+        /* DRAG & DROP ZONES */
+        .drag-drop-zone {
+            border: 2px dashed #0055cc;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 85, 204, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drag-drop-zone:hover {
+            background-color: rgba(0, 85, 204, 0.12);
+            border-color: #0044a0;
+            box-shadow: 0 4px 12px rgba(0, 85, 204, 0.1);
+        }
+
+        .drag-drop-zone i {
+            display: block;
+            margin-bottom: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .drag-drop-zone:hover i {
+            transform: scale(1.1);
+        }
+
+        .drag-drop-zone p {
+            margin: 0;
+            color: #333;
+        }
+
+        .file-preview {
+            animation: slideIn 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-preview button.btn-outline-danger {
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .file-preview button.btn-outline-danger:hover {
+            background: #dc3545;
+            color: white;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .progress-steps { gap: 5px; }
@@ -331,6 +575,11 @@
             .opcion-card { padding: 18px; }
             .area-card { padding: 15px; }
             .precio-box { margin: 10px auto; }
+            .dias-selector { gap: 5px; }
+            .dias-btn { width: 45px; height: 45px; font-size: 12px; }
+            #dias-personalizado { font-size: 0.95rem !important; padding: 0.5rem 0.6rem !important; }
+            .drag-drop-zone { padding: 20px 15px; min-height: 150px; }
+            .drag-drop-zone i { font-size: 2rem; }
         }
     </style>
 </head>
@@ -359,6 +608,8 @@
         <div class="step-dot" id="dot3">3</div>
         <div class="step-line" id="line3"></div>
         <div class="step-dot" id="dot4">4</div>
+        <div class="step-line" id="line4"></div>
+        <div class="step-dot" id="dot5">5</div>
     </div>
 
     <div class="row justify-content-center">
@@ -366,6 +617,8 @@
             <form action="{{ route('solicitudes.enviar') }}" method="POST" enctype="multipart/form-data" id="formSolicitud">
                 @csrf
                 <input type="hidden" name="tipo_certificado" id="tipo_certificado_hidden">
+                <input type="hidden" name="monto_pago" id="monto_pago_hidden" value="0">
+                <input type="hidden" name="dias_evento" id="dias_evento_hidden" value="1">
 
                 {{-- PASO 1 --}}
                 <div class="paso activo" id="paso1">
@@ -508,17 +761,118 @@
                         <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                         <h5 class="fw-bold">Certificado de Evento Público</h5>
                         <p class="text-muted">Para organizar tu evento necesitas un <strong>Certificado de Inspección Técnica de Seguridad Previa a Evento y/o Espectáculo Público</strong></p>
-                        <div class="precio-box" style="display:block; margin: 15px auto; max-width:250px;">
-                            <div class="precio-label">Costo del trámite</div>
-                            <div class="precio-monto">S/ 178.90 <span></span></div>
-                            <div class="precio-tipo">Evento / Espectáculo Público</div>
+                        
+                        {{-- SELECTOR DE DÍAS --}}
+                        <div class="section-title" style="margin-top: 20px;"><i class="fas fa-calendar-days me-2"></i>¿Por cuántos días?</div>
+                        <p class="text-muted mb-3">El precio se calcula por día de validez del certificado</p>
+                        
+                        {{-- OPCIONES RÁPIDAS --}}
+                        <div style="margin-bottom: 15px;">
+                            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 10px;">Opciones rápidas:</p>
+                            <div class="dias-selector" id="diasSelector">
+                                <button type="button" class="dias-btn activo" onclick="seleccionarDias(1)">1 día</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(2)">2 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(3)">3 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(5)">5 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(7)">7 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(10)">10 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(15)">15 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(21)">21 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(30)">30 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(60)">60 días</button>
+                                <button type="button" class="dias-btn" onclick="seleccionarDias(90)">90 días</button>
+                            </div>
                         </div>
+
+                        {{-- INPUT PERSONALIZADO --}}
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 15px; margin: 15px 0;">
+                            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 10px;">O ingresa una cantidad personalizada:</p>
+                            <div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
+                                <input type="number" id="dias-personalizado" 
+                                    class="form-control" style="max-width: 100px; text-align: center;" 
+                                    min="1" max="365" value="1" placeholder="1-365"
+                                    onchange="seleccionarDiasPersonalizado()"
+                                    oninput="seleccionarDiasPersonalizado()">
+                                <span style="color: var(--text-muted); font-weight: 600;">días</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">Mínimo: 1 día | Máximo: 365 días</small>
+                        </div>
+                        
+                        {{-- PRECIO CALCULADO --}}
+                        <div class="precio-box" style="display:block; margin: 15px auto; max-width:300px;">
+                            <div class="precio-label">Costo del trámite por días</div>
+                            <div class="precio-monto" id="precio-evento-monto">S/ 178.90 <span></span></div>
+                            <div class="precio-tipo" id="precio-evento-tipo">Evento Público - 1 día</div>
+                            <div class="precio-nota">* Válido por el período seleccionado</div>
+                        </div>
+                        
                         <div class="d-flex justify-content-center gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" onclick="irPaso(1)">
                                 <i class="fas fa-arrow-left me-1"></i>Volver
                             </button>
-                            <button type="button" class="btn btn-success" onclick="irPaso(3)">
+                            <button type="button" class="btn btn-success" onclick="irPaso(2.5)">
                                 Continuar <i class="fas fa-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- PASO 2C: Ticket de Pago --}}
+                <div class="paso" id="paso2pago">
+                    <div class="card form-card p-4">
+                        <h5 class="fw-bold text-center mb-3">
+                            <i class="fas fa-receipt text-success me-2"></i>
+                            Información de Pago
+                        </h5>
+                        <p class="text-center text-muted mb-4">Realiza tu pago mediante Yape y adjunta el comprobante en el último paso</p>
+                        
+                        <div class="ticket-pago">
+                            <div class="ticket-header">🧾 TICKET DE PAGO</div>
+                            <div class="precio-label">Monto a pagar</div>
+                            <div class="precio-monto" style="margin-bottom: 10px;" id="monto-pago-ticket">S/ 178.90</div>
+                            
+                            {{-- QR YAPE --}}
+                            <div style="margin: 20px 0;">
+                                <p class="fw-bold text-success mb-2">📱 CÓDIGO QR YAPE</p>
+                                <div class="qr-container">
+                                    <img src="{{ asset('qr.jpeg') }}" alt="QR Yape" style="width: 100%; max-width: 150px; height: auto; border-radius: 6px; object-fit: contain;">
+                                </div>
+                                <small class="text-muted d-block mt-2">QR de registro: Escanea para pagar mediante Yape</small>
+                            </div>
+                            
+                            {{-- INFORMACIÓN YAPE --}}
+                            <div class="yape-info">
+                                <h6><i class="fas fa-mobile-alt me-2"></i>Pagar Directamente por Yape</h6>
+                                <p><strong>Número Yape de la Municipalidad:</strong></p>
+                                <div class="yape-numero">+51 974 123 456</div>\n                                <p><strong>A nombre de:</strong> Municipalidad Distrital de Andrés Avelino Cáceres Dorregaray</p>
+                                <p><strong>Concepto:</strong> Certificado ITSE Evento Público</p>
+                            </div>
+                            
+                            {{-- INSTRUCCIONES --}}
+                            <div class="instrucciones-pago">
+                                <h6><i class="fas fa-check-circle me-2"></i>Pasos para pagar:</h6>
+                                <ol>
+                                    <li>Abre tu aplicación Yape</li>
+                                    <li>Escanea el código QR o copia el número de teléfono</li>
+                                    <li>Ingresa el monto: <strong id="monto-instruccion">S/ 178.90</strong></li>
+                                    <li>Completa la transacción</li>
+                                    <li>Guarda el comprobante o pantallacita del pago</li>
+                                    <li>En el último paso adjunta el comprobante</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Importante:</strong> Debes adjuntar el comprobante del pago Yape en el último paso para que tu solicitud sea procesada.
+                        </div>
+                        
+                        <div class="d-flex justify-content-center gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="irPaso(2)">
+                                <i class="fas fa-arrow-left me-1"></i>Volver
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="irPaso(3)">
+                                <i class="fas fa-check me-1"></i>Entendido, Continuar <i class="fas fa-arrow-right ms-1"></i>
                             </button>
                         </div>
                     </div>
@@ -540,16 +894,9 @@
 
                         <div class="section-title"><i class="fas fa-user me-2"></i>Tus Datos</div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Nombres y Apellidos / Razón Social <span class="text-danger">*</span></label>
-                                <input type="text" name="nombres_solicitante" id="nombres_solicitante"
-                                    class="form-control @error('nombres_solicitante') is-invalid @enderror"
-                                    value="{{ old('nombres_solicitante') }}">
-                                <div class="label-error" id="err_nombres">Ingresa tu nombre completo</div>
-                                @error('nombres_solicitante')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label fw-bold">DNI / RUC <span class="text-danger">*</span></label>
+                            {{-- BÚSQUEDA DNI/RUC PRIMERO --}}
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">🔍 Buscar DNI / RUC <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="text" name="dni_ruc" id="dni_ruc"
                                         class="form-control @error('dni_ruc') is-invalid @enderror"
@@ -568,7 +915,7 @@
                                         <i class="fas fa-spinner fa-spin"></i> Verificando...
                                     </div>
                                     <div id="busqueda-exito" style="display:none; color:#28a745; background:#f0fff0; border:1px solid #c3e6cb; padding:8px; border-radius:4px;">
-                                        <i class="fas fa-check-circle"></i> Datos encontrados y completados
+                                        <i class="fas fa-check-circle"></i> Datos encontrados
                                     </div>
                                     <div id="busqueda-error" style="display:none; color:#dc3545; background:#fff5f5; border:1px solid #f5c6cb; padding:8px; border-radius:4px;">
                                         <i class="fas fa-exclamation-circle"></i> <span id="error-msg"></span>
@@ -576,7 +923,20 @@
                                 </div>
                                 @error('dni_ruc')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-3 mb-3">
+
+                            {{-- NOMBRES/RAZÓN SOCIAL SEGUNDO (resultado de búsqueda) --}}
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Nombres y Apellidos / Razón Social <span class="text-danger">*</span></label>
+                                <input type="text" name="nombres_solicitante" id="nombres_solicitante"
+                                    class="form-control @error('nombres_solicitante') is-invalid @enderror"
+                                    value="{{ old('nombres_solicitante') }}"
+                                    placeholder="Se rellena automáticamente">
+                                <div class="label-error" id="err_nombres">Ingresa tu nombre completo</div>
+                                @error('nombres_solicitante')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+
+                            {{-- WHATSAPP TERCERO --}}
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">WhatsApp <i class="fab fa-whatsapp text-success"></i> <span class="text-danger">*</span></label>
                                 <input type="text" name="telefono_whatsapp" id="telefono_whatsapp"
                                     class="form-control @error('telefono_whatsapp') is-invalid @enderror"
@@ -711,29 +1071,85 @@
                 <div class="paso" id="paso4">
                     <div class="card form-card p-4">
                         <div class="section-title"><i class="fas fa-paperclip me-2"></i>Documentos Adjuntos</div>
-                        <div class="alert alert-success mb-3">
-    <i class="fas fa-file-alt me-2"></i>
-    <strong>¡Completa tu Plantilla ITSCE!</strong> Se abrirá con tus datos prellenados.
-    <button type="button" class="btn btn-success btn-sm ms-2" onclick="abrirPlantillaITCE()">
-        <i class="fas fa-external-link-alt me-1"></i>Llenar Plantilla ITSCE
-    </button>
-</div>
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>⚠️ CAMPOS REQUERIDOS:</strong> Todos los siguientes documentos son OBLIGATORIOS para procesar tu solicitud.
+                        </div>
+                        <div class="alert alert-success mb-3" style="border-left: 5px solid #12961d; background: linear-gradient(90deg, rgba(18, 150, 29, 0.1), transparent);">
+                            <i class="fas fa-file-alt me-2" style="color: #12961d; font-size: 1.2rem;"></i>
+                            <strong style="font-size: 1.05rem;">📋 Completa tu Plantilla FIT ITSE</strong>
+                            <p class="mb-2 mt-2">Se abrirá con tus datos prellenados automáticamente.</p>
+                            <button type="button" class="btn btn-lg btn-success" onclick="abrirPlantillaITCE()" style="font-weight: 700; font-size: 1rem; padding: 0.75rem 2rem;">
+                                <i class="fas fa-file-excel me-2"></i>✨ Llenar Plantilla FIT ITSE ✨
+                            </button>
+                        </div>
                         <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Solicitud / FUT</label>
-                                <input type="file" name="doc_solicitud" class="form-control" accept=".pdf,.jpg,.png">
-                                <small class="text-muted">PDF, JPG o PNG</small>
+                            <!-- Solicitud / FUT -->
+                            <div class="col-lg-6 mb-4">
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-file me-2"></i>1. Solicitud / FUT <span class="text-danger">*</span></label>
+                                <div class="drag-drop-zone" id="drop-solicitud" data-field="doc_solicitud">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
+                                    <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
+                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
+                                    <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                                </div>
+                                <input type="file" name="doc_solicitud" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <div class="file-preview mt-2" id="preview-doc_solicitud"></div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Plano / Croquis</label>
-                                <input type="file" name="doc_plano" class="form-control" accept=".pdf,.jpg,.png">
-                                <small class="text-muted">PDF, JPG o PNG</small>
+
+                            <!-- Plano / Croquis -->
+                            <div class="col-lg-6 mb-4">
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-image me-2"></i>2. Plano / Croquis <span class="text-danger">*</span></label>
+                                <div class="drag-drop-zone" id="drop-plano" data-field="doc_plano">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
+                                    <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
+                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
+                                    <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                                </div>
+                                <input type="file" name="doc_plano" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <div class="file-preview mt-2" id="preview-doc_plano"></div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Otros documentos</label>
-                                <input type="file" name="doc_otros" class="form-control" accept=".pdf,.jpg,.png">
-                                <small class="text-muted">PDF, JPG o PNG</small>
+
+                            <!-- DNI / Pasaporte -->
+                            <div class="col-lg-6 mb-4">
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-id-card me-2"></i>3. Copia de DNI / Pasaporte <span class="text-danger">*</span></label>
+                                <div class="drag-drop-zone" id="drop-dni" data-field="doc_dni_copia">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
+                                    <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
+                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
+                                    <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                                </div>
+                                <input type="file" name="doc_dni_copia" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <div class="file-preview mt-2" id="preview-doc_dni_copia"></div>
                             </div>
+
+                            <!-- Comprobante de Pago -->
+                            <div class="col-lg-6 mb-4">
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-receipt me-2"></i>4. Comprobante de Pago <span class="text-danger">*</span></label>
+                                <div class="drag-drop-zone" id="drop-pago" data-field="doc_comprobante_pago">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
+                                    <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
+                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
+                                    <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                                </div>
+                                <input type="file" name="doc_comprobante_pago" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <div class="file-preview mt-2" id="preview-doc_comprobante_pago"></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Otros Documentos (Opcional) -->
+                        <div class="col-lg-6 mb-4">
+                            <label class="form-label fw-bold" style="color: #999; font-size: 1rem;"><i class="fas fa-file me-2"></i>5. Otros Documentos <small class="text-muted">(Opcional)</small></label>
+                            <div class="drag-drop-zone" id="drop-otros" data-field="doc_otros" style="background-color: rgba(255, 193, 7, 0.08); border-color: #ffc107;">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #ffc107; margin-bottom: 0.5rem;"></i>
+                                <p class="fw-bold mb-1">Arrastra archivos adicionales</p>
+                                <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
+                                <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                            </div>
+                            <input type="file" name="doc_otros" class="d-none file-input" accept=".pdf,.jpg,.png">
+                            <div class="file-preview mt-2" id="preview-doc_otros"></div>
                         </div>
 
                         <div class="alert alert-info mt-2">
@@ -784,7 +1200,7 @@ const PRECIOS = {
 // ============================================================
 
 function actualizarDots(pasoActual) {
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
         const dot  = document.getElementById('dot' + i);
         const line = document.getElementById('line' + i);
         if (i < pasoActual) {
@@ -812,6 +1228,8 @@ function elegirTipo(tipo) {
     if (tipo === 'evento') {
         tipoCertificado = 'evento_publico';
         document.getElementById('tipo_certificado_hidden').value = 'evento_publico';
+        // Establecer monto para evento público
+        document.getElementById('monto_pago_hidden').value = PRECIOS.evento_publico;
         document.getElementById('paso2evento').classList.add('activo');
         actualizarDots(2);
     } else {
@@ -829,14 +1247,92 @@ function elegirNegocio(nombreNegocio, anexo, riesgo) {
     irPaso(3);
 }
 
+function seleccionarDias(dias) {
+    // Actualizar campo hidden con número de días
+    document.getElementById('dias_evento_hidden').value = dias;
+    
+    // Limpiar input personalizado
+    document.getElementById('dias-personalizado').value = dias;
+    
+    // Calcular precio base del evento
+    const precioBase = PRECIOS.evento_publico;
+    const precioTotal = precioBase * dias;
+    
+    // Actualizar visual en paso 2B
+    document.getElementById('precio-evento-monto').textContent = 'S/ ' + precioTotal.toFixed(2);
+    const diaLabel = dias === 1 ? 'día' : 'días';
+    document.getElementById('precio-evento-tipo').textContent = 'Evento Público - ' + dias + ' ' + diaLabel;
+    
+    // Actualizar en paso 2C (ticket de pago)
+    document.getElementById('monto-pago-ticket').textContent = 'S/ ' + precioTotal.toFixed(2);
+    document.getElementById('monto-instruccion').textContent = 'S/ ' + precioTotal.toFixed(2);
+    
+    // Guardar en campo hidden de monto
+    document.getElementById('monto_pago_hidden').value = precioTotal;
+    
+    // Actualizar botones de días (marcar activo)
+    document.querySelectorAll('.dias-btn').forEach((btn, index) => {
+        btn.classList.remove('activo');
+    });
+    event.target.classList.add('activo');
+}
+
+function seleccionarDiasPersonalizado() {
+    const diasInput = document.getElementById('dias-personalizado');
+    let dias = parseInt(diasInput.value) || 1;
+    
+    // Validar rango
+    if (dias < 1) dias = 1;
+    if (dias > 365) dias = 365;
+    
+    // Actualizar input con valor validado
+    diasInput.value = dias;
+    
+    // Actualizar campo hidden con número de días
+    document.getElementById('dias_evento_hidden').value = dias;
+    
+    // Calcular precio base del evento
+    const precioBase = PRECIOS.evento_publico;
+    const precioTotal = precioBase * dias;
+    
+    // Actualizar visual en paso 2B
+    document.getElementById('precio-evento-monto').textContent = 'S/ ' + precioTotal.toFixed(2);
+    const diaLabel = dias === 1 ? 'día' : 'días';
+    document.getElementById('precio-evento-tipo').textContent = 'Evento Público - ' + dias + ' ' + diaLabel;
+    
+    // Actualizar en paso 2C (ticket de pago)
+    document.getElementById('monto-pago-ticket').textContent = 'S/ ' + precioTotal.toFixed(2);
+    document.getElementById('monto-instruccion').textContent = 'S/ ' + precioTotal.toFixed(2);
+    
+    // Guardar en campo hidden de monto
+    document.getElementById('monto_pago_hidden').value = precioTotal;
+    
+    // Deseleccionar botones rápidos
+    document.querySelectorAll('.dias-btn').forEach(btn => {
+        btn.classList.remove('activo');
+    });
+}
+
 function calcularPrecio() {
     const area = parseFloat(document.getElementById('area_neg').value) || 0;
-    if (!tipoCertificado || tipoCertificado === 'evento_publico' || area <= 0) return;
+    
+    // Si es evento público, establecer monto fijo
+    if (tipoCertificado === 'evento_publico') {
+        const precioEvento = PRECIOS.evento_publico;
+        document.getElementById('monto_pago_hidden').value = precioEvento;
+        return;
+    }
+    
+    if (!tipoCertificado || area <= 0) return;
 
     const tabla  = PRECIOS[tipoCertificado][nivelRiesgo];
     const precio = area < 100 ? tabla.menorA100 : tabla.mayorA100;
     const rango  = area < 100 ? 'Área menor a 100 m²' : 'Área mayor o igual a 100 m²';
 
+    // Actualizar campo hidden con el monto
+    document.getElementById('monto_pago_hidden').value = precio;
+    
+    // Mostrar en pantalla
     document.getElementById('precio-monto').textContent = 'S/ ' + precio.toFixed(2);
     document.getElementById('precio-tipo').textContent  =
         (tipoCertificado === 'anexo_13' ? 'Anexo 13 — Riesgo Bajo/Medio' : 'Anexo 14 — Riesgo Alto/Muy Alto')
@@ -846,7 +1342,18 @@ function calcularPrecio() {
 
 function irPaso(n) {
     ocultarTodos();
-    if (n == 3) {
+    if (n == 2) {
+        // Paso 2: Para evento, muestra selector de días; para negocio no existe
+        if (tipoFlujo === 'evento') {
+            document.getElementById('paso2evento').classList.add('activo');
+            actualizarDots(2);
+        }
+    } else if (n == 2.5 || n === 2.5) {
+        // Paso 2C: Ticket de pago (solo para eventos)
+        document.getElementById('paso2pago').classList.add('activo');
+        actualizarDots(3); // Mostrar dot 3 como activo para que vea que avanzó
+    } else if (n == 3) {
+        // Paso 3: Datos del solicitante
         document.getElementById('paso3').classList.add('activo');
         actualizarDots(3);
         if (tipoCertificado === 'evento_publico') {
@@ -873,8 +1380,13 @@ function irPaso(n) {
         }
         limpiarErrores();
     } else if (n == 4) {
+        // Paso 4: Documentos adjuntos
         document.getElementById('paso4').classList.add('activo');
         actualizarDots(4);
+    } else if (n == 5) {
+        // Paso 5: Confirmación final
+        document.getElementById('paso5').classList.add('activo');
+        actualizarDots(5);
     } else if (n == 1) {
         document.getElementById('paso1').classList.add('activo');
         actualizarDots(1);
@@ -884,11 +1396,14 @@ function irPaso(n) {
 function volverPaso2() {
     ocultarTodos();
     if (tipoFlujo === 'evento') {
-        document.getElementById('paso2evento').classList.add('activo');
+        // Para evento, volver a paso2pago (ticket de pago)
+        document.getElementById('paso2pago').classList.add('activo');
+        actualizarDots(3); // Mostrar dot 3 como activo para pasos 2C
     } else {
+        // Para negocio, volver a paso2negocio
         document.getElementById('paso2negocio').classList.add('activo');
+        actualizarDots(2);
     }
-    actualizarDots(2);
 }
 
 // ===== VALIDACIÓN =====
@@ -968,6 +1483,8 @@ function validarYContinuar() {
 }
 
 // ===== BÚSQUEDA DNI/RUC =====
+let nombreYaRelleno = false; // Flag para evitar doble relleno
+
 document.getElementById('btnVerificar').addEventListener('click', async function() {
     const dniRuc = document.getElementById('dni_ruc').value.trim();
     
@@ -980,6 +1497,9 @@ document.getElementById('btnVerificar').addEventListener('click', async function
         mostrarErrorBusqueda('DNI debe tener 8 dígitos, RUC debe tener 11');
         return;
     }
+    
+    // Limpiar el flag cuando se inicia una nueva búsqueda
+    nombreYaRelleno = false;
     
     // Verificar si es DNI (8 dígitos) o RUC (11 dígitos)
     const esDNI = dniRuc.length === 8;
@@ -1003,29 +1523,56 @@ document.getElementById('btnVerificar').addEventListener('click', async function
         const data = await response.json();
         
         if (data.success) {
-            // DNI encontrado
-            if (esDNI) {
-                // Concatenar nombres, apellido_paterno y apellido_materno
-                const nombreCompleto = [
-                    data.nombres,
-                    data.apellido_paterno,
-                    data.apellido_materno
-                ].filter(n => n).join(' ').trim();
+            // Solo rellenar si aún no lo hemos hecho
+            if (!nombreYaRelleno) {
+                // DNI encontrado
+                if (esDNI) {
+                    // Concatenar todos los campos de nombre
+                    let textoCompleto = [
+                        data.nombres,
+                        data.apellido_paterno,
+                        data.apellido_materno
+                    ].filter(n => n).join(' ');
+                    
+                    // Limpiar caracteres especiales y espacios múltiples
+                    textoCompleto = textoCompleto
+                        .replace(/[,\.;]/g, ' ') // Reemplazar comas, puntos, etc. por espacios
+                        .replace(/\s+/g, ' ') // Convertir múltiples espacios en uno
+                        .trim();
+                    
+                    // Dividir en palabras y eliminar duplicados (manteniendo primer aparición)
+                    const palabras = textoCompleto.split(' ');
+                    const palabrasUnicas = [];
+                    const vistos = new Set();
+                    
+                    for (const palabra of palabras) {
+                        const palabraLower = palabra.toLowerCase();
+                        if (!vistos.has(palabraLower)) {
+                            vistos.add(palabraLower);
+                            palabrasUnicas.push(palabra);
+                        }
+                    }
+                    
+                    const nombreLimpio = palabrasUnicas.join(' ');
+                    
+                    document.getElementById('nombres_solicitante').value = nombreLimpio || data.nombres;
+                } else {
+                    // RUC encontrado
+                    document.getElementById('nombres_solicitante').value = data.nombres || '';
+                    // Rellenar datos del negocio si existen
+                    if (data.direccion) {
+                        document.getElementById('direccion_neg').value = data.direccion;
+                    }
+                    if (data.departamento) {
+                        document.getElementById('departamento_neg').value = data.departamento;
+                    }
+                    if (data.provincia) {
+                        document.getElementById('provincia_neg').value = data.provincia;
+                    }
+                }
                 
-                document.getElementById('nombres_solicitante').value = nombreCompleto || data.nombres;
-            } else {
-                // RUC encontrado
-                document.getElementById('nombres_solicitante').value = data.nombres || '';
-                // Rellenar datos del negocio si existen
-                if (data.direccion) {
-                    document.getElementById('direccion_neg').value = data.direccion;
-                }
-                if (data.departamento) {
-                    document.getElementById('departamento_neg').value = data.departamento;
-                }
-                if (data.provincia) {
-                    document.getElementById('provincia_neg').value = data.provincia;
-                }
+                // Marcar como rellenado
+                nombreYaRelleno = true;
             }
             
             // Marcar como completado y mostrar éxito
@@ -1102,6 +1649,150 @@ function abrirPlantillaITCE() {
 
     // Abrir en nueva pestaña
     window.open(url, '_blank');
+}
+
+// ===== DRAG & DROP FILE UPLOAD =====
+document.addEventListener('DOMContentLoaded', function() {
+    const dragDropZones = document.querySelectorAll('.drag-drop-zone');
+    const fileInputs = document.querySelectorAll('.file-input');
+
+    // Configurar cada zona de drag-drop
+    dragDropZones.forEach(zone => {
+        const fieldName = zone.getAttribute('data-field');
+        const fileInput = document.querySelector(`input[name="${fieldName}"]`);
+
+        // Click para abrir selector de archivo
+        zone.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        // Prevenir comportamiento por defecto
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            zone.style.backgroundColor = 'rgba(0, 85, 204, 0.15)';
+            zone.style.borderColor = '#0055cc';
+            zone.style.borderWidth = '2px';
+        });
+
+        zone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetZoneStyle(zone, fieldName);
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetZoneStyle(zone, fieldName);
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0], fileInput, fieldName, zone);
+            }
+        });
+    });
+
+    // Cambio de archivo mediante input
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                const fieldName = this.getAttribute('name');
+                const zone = document.querySelector(`.drag-drop-zone[data-field="${fieldName}"]`);
+                handleFileSelect(this.files[0], this, fieldName, zone);
+            }
+        });
+    });
+
+    function resetZoneStyle(zone, fieldName) {
+        if (fieldName === 'doc_otros') {
+            zone.style.backgroundColor = 'rgba(255, 193, 7, 0.08)';
+            zone.style.borderColor = '#ffc107';
+        } else {
+            zone.style.backgroundColor = 'rgba(0, 85, 204, 0.08)';
+            zone.style.borderColor = '#0055cc';
+        }
+        zone.style.borderWidth = '1px';
+    }
+
+    function handleFileSelect(file, input, fieldName, zone) {
+        // Validar tipo de archivo
+        const extensionesPermitidas = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (!extensionesPermitidas.includes(file.type)) {
+            alert('❌ Tipo de archivo no permitido. Solo PDF, JPG o PNG.');
+            return;
+        }
+
+        // Validar tamaño (5 MB máximo)
+        const maxSize = 5 * 1024 * 1024; // 5 MB
+        if (file.size > maxSize) {
+            alert('❌ El archivo es demasiado grande. Máximo 5 MB.');
+            return;
+        }
+
+        // Crear DataTransfer para simular un cambio de archivo real
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+
+        // Mostrar preview del archivo
+        updateFilePreview(file, fieldName);
+
+        // Visual feedback
+        zone.style.backgroundColor = 'rgba(18, 150, 29, 0.1)';
+        zone.style.borderColor = '#12961d';
+        resetZoneStyle(zone, fieldName);
+    }
+
+    function updateFilePreview(file, fieldName) {
+        const previewDiv = document.querySelector(`#preview-${fieldName}`);
+        if (!previewDiv) return;
+
+        const fileName = file.name;
+        const fileSize = (file.size / 1024).toFixed(2); // KB
+        
+        previewDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; background: rgba(18, 150, 29, 0.1); padding: 10px 12px; border-radius: 6px; border-left: 4px solid #12961d;">
+                <i class="fas fa-check-circle" style="color: #12961d; font-size: 1.2rem;"></i>
+                <div style="flex: 1;">
+                    <p style="margin: 0; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${fileName}
+                    </p>
+                    <small style="color: #666;">
+                        ${fileSize} KB
+                    </small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="limpiarArchivo('${fieldName}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }
+});
+
+function limpiarArchivo(fieldName) {
+    const fileInput = document.querySelector(`input[name="${fieldName}"]`);
+    const previewDiv = document.querySelector(`#preview-${fieldName}`);
+    const zone = document.querySelector(`.drag-drop-zone[data-field="${fieldName}"]`);
+    
+    // Limpiar el input
+    fileInput.value = '';
+    
+    // Limpiar preview
+    if (previewDiv) {
+        previewDiv.innerHTML = '';
+    }
+    
+    // Resetear estilos de zona
+    if (fieldName === 'doc_otros') {
+        zone.style.backgroundColor = 'rgba(255, 193, 7, 0.08)';
+        zone.style.borderColor = '#ffc107';
+    } else {
+        zone.style.backgroundColor = 'rgba(0, 85, 204, 0.08)';
+        zone.style.borderColor = '#0055cc';
+    }
+    zone.style.borderWidth = '1px';
 }
 
 </script>

@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seguimiento de Trámite - M.A.A.C.D</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/fontawesome.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('images/logo_muni.png') }}">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+        .fa, .fas, .far, .fab, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fa-sharp { font-family: var(--fa-style-family,"Font Awesome 6 Free") !important; }
 
         :root {
             --brand:        #2563eb;
@@ -138,6 +139,7 @@
 
         .badge-recibido    { background: #dbeafe; color: #0c4a6e; }
         .badge-en_revision { background: #fef3c7; color: #78350f; }
+        .badge-aceptado    { background: #cffafe; color: #164e63; }
         .badge-aprobado    { background: #dcfce7; color: #166534; }
         .badge-rechazado   { background: #fee2e2; color: #991b1b; }
 
@@ -436,7 +438,13 @@
                 <div class="text-center mb-4">
                     <div class="codigo-badge mb-3">{{ $solicitud->codigo_seguimiento }}</div>
                     <span class="badge-estado badge-{{ $solicitud->estado }}">
-                        @if($solicitud->estado == 'recibido')
+                        @if($solicitud->estado == 'registrado')
+                            <i class="fas fa-clipboard-list"></i> REGISTRADO
+                        @elseif($solicitud->estado == 'aceptado')
+                            <i class="fas fa-check"></i> ACEPTADO
+                        @elseif($solicitud->estado == 'enviado_a_revision')
+                            <i class="fas fa-paper-plane"></i> ENVIADO A REVISIÓN
+                        @elseif($solicitud->estado == 'recibido')
                             <i class="fas fa-inbox"></i> SOLICITUD ENVIADA
                         @elseif($solicitud->estado == 'en_revision')
                             <i class="fas fa-search"></i> EN REVISIÓN
@@ -450,16 +458,16 @@
 
                 {{-- TIMELINE --}}
                 <div class="timeline mb-4">
-                    <div class="timeline-item {{ in_array($solicitud->estado, ['recibido','en_revision','aprobado','rechazado']) ? 'active' : '' }}">
+                    <div class="timeline-item {{ in_array($solicitud->estado, ['registrado','aceptado','enviado_a_revision','recibido','en_revision','aprobado','rechazado']) ? 'active' : '' }}">
                         <div class="timeline-dot"></div>
                         <div class="timeline-line"></div>
                         <strong>Solicitud recibida</strong>
                         <p>{{ $solicitud->created_at->format('d/m/Y H:i') }}</p>
                     </div>
-                    <div class="timeline-item {{ in_array($solicitud->estado, ['en_revision','aprobado','rechazado']) ? 'active' : '' }}">
+                    <div class="timeline-item {{ in_array($solicitud->estado, ['aceptado','enviado_a_revision','en_revision','aprobado','rechazado']) ? 'active' : '' }}">
                         <div class="timeline-dot"></div>
                         <div class="timeline-line"></div>
-                        <strong>En revisión</strong>
+                        <strong>Aceptada y en revisión</strong>
                         <p>El personal está evaluando tu solicitud</p>
                     </div>
                     <div class="timeline-item {{ in_array($solicitud->estado, ['aprobado','rechazado']) ? 'active' : '' }}">
@@ -497,6 +505,20 @@
                     <div class="dato-row">
                         <span class="dato-label"><i class="fas fa-comment me-2 text-success"></i>Observaciones</span>
                         <span class="dato-valor">{{ $solicitud->observaciones }}</span>
+                    </div>
+                    @endif
+                    @if(!is_null($solicitud->estado_pago))
+                    <div class="dato-row">
+                        <span class="dato-label"><i class="fas fa-credit-card me-2 text-success"></i>Estado de Pago</span>
+                        <span class="dato-valor">
+                            @if($solicitud->estado_pago == 'pago_validado')
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i>Pago Validado</span>
+                            @elseif($solicitud->estado_pago == 'pago_rechazado')
+                                <span class="badge bg-danger"><i class="fas fa-times me-1"></i>Pago Rechazado</span>
+                            @else
+                                <span class="badge bg-secondary"><i class="fas fa-hourglass-half me-1"></i>Pago Pendiente</span>
+                            @endif
+                        </span>
                     </div>
                     @endif
                 </div>
@@ -545,7 +567,13 @@
                                 </small>
                             </div>
                             <span class="badge-estado badge-{{ $sol->estado }}">
-                                @if($sol->estado == 'recibido')
+                                @if($sol->estado == 'registrado')
+                                    <i class="fas fa-clipboard-list"></i> REGISTRADA
+                                @elseif($sol->estado == 'aceptado')
+                                    <i class="fas fa-check"></i> ACEPTADA
+                                @elseif($sol->estado == 'enviado_a_revision')
+                                    <i class="fas fa-paper-plane"></i> ENVIADO A REVISIÓN
+                                @elseif($sol->estado == 'recibido')
                                     <i class="fas fa-inbox"></i> ENVIADA
                                 @elseif($sol->estado == 'en_revision')
                                     <i class="fas fa-search"></i> EN REVISIÓN
@@ -623,5 +651,8 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
 </body>
 </html>

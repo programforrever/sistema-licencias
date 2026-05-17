@@ -31,6 +31,7 @@ class Licencia extends Model
         'nombre_establecimiento',
         'nombre_evento',
         'fecha_evento',
+        'dias_evento',
         'organizador_nombre',
         'organizador_dni',
         'representante_legal',
@@ -39,6 +40,19 @@ class Licencia extends Model
         'horario_inicio',
         'horario_fin',
         'restricciones',
+        // Firma Digital
+        'signature_status',
+        'pdf_path',
+        'pdf_firmado_path',
+        'signed_by_user_id',
+        'signed_at',
+    ];
+
+    protected $casts = [
+        'fecha_emision' => 'date',
+        'fecha_vencimiento' => 'date',
+        'fecha_evento' => 'date',
+        'signed_at' => 'datetime',
     ];
 
     public function contribuyente()
@@ -54,5 +68,13 @@ class Licencia extends Model
     public function requisitos()
     {
         return $this->hasMany(Requisito::class);
+    }
+
+    /**
+     * Relación con el usuario que firmó el certificado
+     */
+    public function signedByUser()
+    {
+        return $this->belongsTo(User::class, 'signed_by_user_id');
     }
 }

@@ -382,6 +382,13 @@
                         <input type="date" name="fecha_evento" class="form-control" value="{{ $licencia->fecha_evento }}">
                     </div>
                 </div>
+                <div class="col-md-2">
+                    <div class="field-wrap">
+                        <label class="field-label">Días de Vigencia</label>
+                        <input type="number" name="dias_evento" class="form-control" value="{{ $licencia->dias_evento ?? 1 }}" min="1" max="365">
+                        <small class="text-muted">1-365 días</small>
+                    </div>
+                </div>
                 <div class="col-md-6">
                     <div class="field-wrap">
                         <label class="field-label">Organizador</label>

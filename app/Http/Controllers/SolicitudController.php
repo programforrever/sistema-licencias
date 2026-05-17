@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Solicitud;
+use App\Models\RevisorSolicitud;
 use App\Services\NotificationService;
+use App\Mail\SolicitudEnviadoARevisionMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SolicitudController extends Controller
 {
@@ -21,6 +24,15 @@ class SolicitudController extends Controller
 
     public function enviar(Request $request)
     {
+        // LOG DETALLADO de archivos recibidos
+        Log::info('=== SOLICITUD NUEVA ===');
+        Log::info('Todos los archivos en request:', ['files' => array_keys($request->allFiles())]);
+        Log::info('doc_solicitud:', ['present' => $request->hasFile('doc_solicitud'), 'file' => $request->hasFile('doc_solicitud') ? $request->file('doc_solicitud')->getClientOriginalName() : 'N/A']);
+        Log::info('doc_plano:', ['present' => $request->hasFile('doc_plano'), 'file' => $request->hasFile('doc_plano') ? $request->file('doc_plano')->getClientOriginalName() : 'N/A']);
+        Log::info('doc_dni_copia:', ['present' => $request->hasFile('doc_dni_copia'), 'file' => $request->hasFile('doc_dni_copia') ? $request->file('doc_dni_copia')->getClientOriginalName() : 'N/A']);
+        Log::info('doc_comprobante_pago:', ['present' => $request->hasFile('doc_comprobante_pago'), 'file' => $request->hasFile('doc_comprobante_pago') ? $request->file('doc_comprobante_pago')->getClientOriginalName() : 'N/A']);
+        Log::info('doc_otros:', ['present' => $request->hasFile('doc_otros'), 'file' => $request->hasFile('doc_otros') ? $request->file('doc_otros')->getClientOriginalName() : 'N/A']);
+
         $rules = [
             'tipo_certificado'   => 'required|in:anexo_14,anexo_13,evento_publico',
             'nombres_solicitante'=> 'required|min:3',
@@ -37,22 +49,42 @@ class SolicitudController extends Controller
             $rules['fecha_evento']       = 'required|date';
             $rules['organizador_nombre'] = 'required';
             $rules['organizador_dni']    = 'required';
+            $rules['dias_evento']        = 'required|integer|min:1|max:365';
+            $rules['doc_comprobante_yape']= 'required|file|mimes:pdf,jpg,jpeg,png|max:5120';
         }
 
         $request->validate($rules);
 
         $docSolicitud = null;
         $docPlano     = null;
+        $docDniCopia  = null;
+        $docComprobantePago = null;
+        $docComprobanteYape = null;
         $docOtros     = null;
 
         if ($request->hasFile('doc_solicitud')) {
             $docSolicitud = $request->file('doc_solicitud')->store('solicitudes', 'public');
+            Log::info('✓ doc_solicitud guardado:', ['path' => $docSolicitud]);
         }
         if ($request->hasFile('doc_plano')) {
             $docPlano = $request->file('doc_plano')->store('solicitudes', 'public');
+            Log::info('✓ doc_plano guardado:', ['path' => $docPlano]);
+        }
+        if ($request->hasFile('doc_dni_copia')) {
+            $docDniCopia = $request->file('doc_dni_copia')->store('solicitudes', 'public');
+            Log::info('✓ doc_dni_copia guardado:', ['path' => $docDniCopia]);
+        }
+        if ($request->hasFile('doc_comprobante_pago')) {
+            $docComprobantePago = $request->file('doc_comprobante_pago')->store('solicitudes', 'public');
+            Log::info('✓ doc_comprobante_pago guardado:', ['path' => $docComprobantePago]);
+        }
+        if ($request->hasFile('doc_comprobante_yape')) {
+            $docComprobanteYape = $request->file('doc_comprobante_yape')->store('solicitudes', 'public');
+            Log::info('✓ doc_comprobante_yape guardado:', ['path' => $docComprobanteYape]);
         }
         if ($request->hasFile('doc_otros')) {
             $docOtros = $request->file('doc_otros')->store('solicitudes', 'public');
+            Log::info('✓ doc_otros guardado:', ['path' => $docOtros]);
         }
 
         $codigo = 'SOL-' . date('Y') . '-' . strtoupper(Str::random(6));
@@ -72,12 +104,17 @@ class SolicitudController extends Controller
             'actividad'           => $request->actividad,
             'area_edificacion'    => $request->area_edificacion,
             'fecha_evento'        => $request->fecha_evento,
+            'dias_evento'         => (int) ($request->dias_evento ?? 1),
             'organizador_nombre'  => $request->organizador_nombre,
             'organizador_dni'     => $request->organizador_dni,
             'doc_solicitud'       => $docSolicitud,
             'doc_plano'           => $docPlano,
+            'doc_dni_copia'       => $docDniCopia,
+            'doc_comprobante_pago'=> $docComprobantePago,
+            'doc_comprobante_yape'=> $docComprobanteYape,
             'doc_otros'           => $docOtros,
             'estado'              => 'recibido',
+            'monto_pago'          => (float) ($request->monto_pago ?? 0),
         ]);
 
         return redirect()->route('solicitudes.confirmacion', $solicitud->codigo_seguimiento);
@@ -142,13 +179,15 @@ class SolicitudController extends Controller
     public function procesarEstado(Request $request, Solicitud $solicitud)
     {
         $request->validate([
-            'estado'        => 'required|in:en_revision,aprobado,rechazado',
+            'estado'        => 'required|in:aceptado,enviado_a_revision,aprobado,rechazado',
             'observaciones' => 'nullable',
+            'estado_pago'   => 'nullable|in:pago_pendiente,pago_validado,pago_rechazado',
             'enviar_notificacion' => 'nullable|in:email,whatsapp,ambos',
         ]);
 
         $solicitud->update([
             'estado'        => $request->estado,
+            'estado_pago'   => $request->estado_pago,
             'observaciones' => $request->observaciones,
         ]);
 
@@ -407,6 +446,127 @@ class SolicitudController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error en la consulta: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar solicitud a revisión (con revisores)
+     */
+    public function enviarARevision(Request $request, Solicitud $solicitud)
+    {
+        $request->validate([
+            'revisores' => 'required|array|min:1',
+            'revisores.*.email' => 'required|email',
+            'revisores.*.nombre' => 'required|string',
+        ]);
+
+        try {
+            // Limpiar revisores anteriores si existen
+            $solicitud->revisores()->delete();
+
+            // Crear los 4 revisores y enviar emails
+            foreach ($request->revisores as $revisor_data) {
+                $token = Str::random(60);
+                
+                // Crear revisor
+                $revisor = RevisorSolicitud::create([
+                    'solicitud_id' => $solicitud->id,
+                    'email' => $revisor_data['email'],
+                    'nombre_revisor' => $revisor_data['nombre'],
+                    'token_revisor' => $token,
+                ]);
+
+                // Enviar email a cada revisor con los documentos
+                try {
+                    Mail::to($revisor_data['email'])
+                        ->send(new SolicitudEnviadoARevisionMail($solicitud, $revisor));
+                    
+                    Log::info("Email enviado a revisor: {$revisor_data['email']}");
+                } catch (\Exception $mail_error) {
+                    Log::error("Error al enviar email a {$revisor_data['email']}: " . $mail_error->getMessage());
+                    throw $mail_error;
+                }
+            }
+
+            // Cambiar estado de la solicitud a enviado_a_revision
+            $solicitud->update(['estado' => 'enviado_a_revision']);
+
+            $cantidad_revisores = count($request->revisores);
+            $mensaje = "✅ Solicitud enviada a $cantidad_revisores revisor" . ($cantidad_revisores > 1 ? "es" : "") . " correctamente. Se han enviado los documentos por correo.";
+            return redirect()->route('solicitudes.show', $solicitud)
+                ->with('success', $mensaje);
+
+        } catch (\Exception $e) {
+            Log::error("Error enviarARevision: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
+            return redirect()->route('solicitudes.show', $solicitud)
+                ->with('error', '❌ Error al enviar a revisión: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Actualizar estado de pago de la solicitud
+     */
+    public function actualizarEstadoPago(Request $request, Solicitud $solicitud)
+    {
+        $request->validate([
+            'estado_pago' => 'required|in:pago_pendiente,pago_validado,pago_rechazado',
+        ]);
+
+        try {
+            $solicitud->update(['estado_pago' => $request->estado_pago]);
+
+            return redirect()->route('solicitudes.show', $solicitud)
+                ->with('success', '✅ Estado de pago actualizado correctamente.');
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error actualizarEstadoPago: " . $e->getMessage());
+            return redirect()->route('solicitudes.show', $solicitud)
+                ->with('error', '❌ Error al actualizar estado de pago: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * API: Obtener nuevas solicitudes (estado = 'recibido')
+     * Para polling de notificaciones en el header
+     */
+    public function obtenerNuevasSolicitudes()
+    {
+        try {
+            $solicitudes = Solicitud::where('estado', 'recibido')
+                ->select('id', 'codigo_seguimiento', 'tipo_certificado', 'nombres_solicitante', 'nombre_evento', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($sol) {
+                    return [
+                        'id' => $sol->id,
+                        'codigo' => $sol->codigo_seguimiento,
+                        'tipo' => match($sol->tipo_certificado) {
+                            'anexo_13' => 'ITSE 13',
+                            'anexo_14' => 'ITSE 14',
+                            'evento_publico' => 'Evento Público',
+                            default => $sol->tipo_certificado
+                        },
+                        'titulo' => $sol->tipo_certificado === 'evento_publico' 
+                            ? ($sol->nombre_evento ?? $sol->nombres_solicitante)
+                            : $sol->nombres_solicitante,
+                        'solicitante' => $sol->nombres_solicitante,
+                        'fecha' => $sol->created_at->format('d/m/Y H:i'),
+                        'url' => route('solicitudes.show', $sol),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'total' => $solicitudes->count(),
+                'solicitudes' => $solicitudes,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error en obtenerNuevasSolicitudes: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

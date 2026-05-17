@@ -72,7 +72,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Actividad Económica</label>
-                            <select name="actividad_economica_id" class="form-select @error('actividad_economica_id') is-invalid @enderror" required>
+                            <select name="actividad_economica_id" class="form-select select2 @error('actividad_economica_id') is-invalid @enderror" required>
                                 <option value="">-- Seleccionar --</option>
                                 @foreach($actividades as $a)
                                 <option value="{{ $a->id }}" {{ old('actividad_economica_id') == $a->id ? 'selected' : '' }}>
@@ -183,6 +183,12 @@
                             <label class="form-label fw-bold">Fecha del Evento</label>
                             <input type="date" name="fecha_evento" class="form-control @error('fecha_evento') is-invalid @enderror" value="{{ old('fecha_evento') ?? $solicitud?->fecha_evento?->format('Y-m-d') ?? '' }}">
                             @error('fecha_evento')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label fw-bold">Días de Vigencia</label>
+                            <input type="number" name="dias_evento" class="form-control @error('dias_evento') is-invalid @enderror" value="{{ old('dias_evento') ?? $solicitud?->dias_evento ?? 1 }}" min="1" max="365">
+                            <small class="text-muted">1-365 días</small>
+                            @error('dias_evento')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Organizador (Nombre completo)</label>

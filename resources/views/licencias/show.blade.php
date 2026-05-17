@@ -409,6 +409,101 @@
             </div>
         </div>
 
+        {{-- ── FIRMA DIGITAL ── --}}
+        <div class="detail-card">
+            <div class="card-head">
+                <span class="ch-icon" style="background: #fef3c7; color: #92400e;"><i class="fas fa-pen-fancy"></i></span>
+                <h6>Firma Digital</h6>
+            </div>
+            <div class="card-body-custom">
+                <div class="data-row">
+                    <span class="dr-label">Estado</span>
+                    <span class="dr-value">
+                        @if($licencia->signature_status === 'firmado')
+                            <span style="display: inline-block; background: #dcfce7; color: #166534; padding: .3rem .6rem; border-radius: 4px; font-size: .8rem; font-weight: 600;">
+                                ✓ FIRMADO
+                            </span>
+                        @else
+                            <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: .3rem .6rem; border-radius: 4px; font-size: .8rem; font-weight: 600;">
+                                ⏳ PENDIENTE
+                            </span>
+                        @endif
+                    </span>
+                </div>
+
+                @if($licencia->signature_status === 'firmado' && $licencia->signedByUser)
+                <div class="data-row">
+                    <span class="dr-label">Firmado por</span>
+                    <span class="dr-value">{{ $licencia->signedByUser->name }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="dr-label">Fecha</span>
+                    <span class="dr-value">{{ $licencia->signed_at->format('d/m/Y H:i') }}</span>
+                </div>
+                @endif
+
+                <div style="display: flex; gap: .5rem; flex-direction: column; margin-top: 1rem;">
+                    @if($licencia->pdf_path)
+                    <a href="{{ route('licencias.descargar-original', $licencia) }}" style="
+                        display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+                        padding: .5rem .75rem;
+                        background: #f3f4f6; color: #374151;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        font-size: .8rem; font-weight: 600;
+                        text-decoration: none;
+                        transition: all .15s;
+                    " onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+                        <i class="fas fa-file-pdf"></i> PDF Original
+                    </a>
+                    @endif
+
+                    @if($licencia->signature_status === 'firmado' && $licencia->pdf_firmado_path)
+                    <a href="{{ route('licencias.descargar', $licencia) }}" style="
+                        display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+                        padding: .5rem .75rem;
+                        background: #dcfce7; color: #166534;
+                        border: 1px solid #bbf7d0;
+                        border-radius: var(--radius-sm);
+                        font-size: .8rem; font-weight: 600;
+                        text-decoration: none;
+                        transition: all .15s;
+                    " onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">
+                        <i class="fas fa-check-circle"></i> PDF Firmado
+                    </a>
+                    @if(auth()->check() && auth()->user()->signature)
+                    <a href="{{ route('licencias.firmar', $licencia) }}" style="
+                        display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+                        padding: .5rem .75rem;
+                        background: #fbbf24; color: #78350f;
+                        border: 1px solid #fcd34d;
+                        border-radius: var(--radius-sm);
+                        font-size: .8rem; font-weight: 600;
+                        text-decoration: none;
+                        transition: all .15s;
+                    " onmouseover="this.style.background='#f59e0b'" onmouseout="this.style.background='#fbbf24'">
+                        <i class="fas fa-edit"></i> Editar Firma
+                    </a>
+                    @endif
+                    @elseif($licencia->signature_status === 'pendiente_firma' && auth()->check())
+                    <a href="{{ route('licencias.firmar', $licencia) }}" style="
+                        display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+                        padding: .5rem .75rem;
+                        background: var(--brand); color: #fff;
+                        border: none;
+                        border-radius: var(--radius-sm);
+                        font-size: .8rem; font-weight: 600;
+                        text-decoration: none;
+                        cursor: pointer;
+                        transition: all .15s;
+                    " onmouseover="this.style.background='var(--brand-dark)'" onmouseout="this.style.background='var(--brand)'">
+                        <i class="fas fa-pen-fancy"></i> Firmar Ahora
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         {{-- Aprobar (solo pendiente) --}}
         @if($licencia->estado == 'pendiente' && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('ingeniero')))
         <div class="detail-card approve-card">

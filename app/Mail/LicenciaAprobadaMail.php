@@ -36,21 +36,36 @@ class LicenciaAprobadaMail extends Mailable
                 'titular' => $this->licencia->contribuyente->nombres_razon_social,
                 'numero' => $this->licencia->numero_licencia,
                 'tipo' => $this->getTipoDescripcion(),
+                'es_evento' => $this->licencia->tipo_certificado === 'evento_publico',
+                'fecha_evento' => $this->licencia->fecha_evento ? $this->licencia->fecha_evento->format('d/m/Y') : null,
             ]
         );
     }
 
     public function attachments(): array
     {
-        $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'pdfs' . DIRECTORY_SEPARATOR . $this->licencia->numero_licencia . '.pdf');
+        // Intentar enviar el PDF firmado si existe
+        if ($this->licencia->pdf_firmado_path) {
+            $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $this->licencia->pdf_firmado_path);
+            if (file_exists($pdfPath)) {
+                return [
+                    Attachment::fromPath($pdfPath)
+                        ->as('Certificado-' . $this->licencia->numero_licencia . '.pdf')
+                        ->withMime('application/pdf'),
+                ];
+            }
+        }
         
-        // Solo adjuntar si el archivo existe
-        if (file_exists($pdfPath)) {
-            return [
-                Attachment::fromPath($pdfPath)
-                    ->as('Certificado-' . $this->licencia->numero_licencia . '.pdf')
-                    ->withMime('application/pdf'),
-            ];
+        // Si no existe PDF firmado, intentar con pdf_path
+        if ($this->licencia->pdf_path) {
+            $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $this->licencia->pdf_path);
+            if (file_exists($pdfPath)) {
+                return [
+                    Attachment::fromPath($pdfPath)
+                        ->as('Certificado-' . $this->licencia->numero_licencia . '.pdf')
+                        ->withMime('application/pdf'),
+                ];
+            }
         }
         
         return [];

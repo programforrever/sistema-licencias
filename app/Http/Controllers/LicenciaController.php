@@ -113,6 +113,9 @@ class LicenciaController extends Controller
                 if (!$request->filled('fecha_evento') && $solicitud->fecha_evento) {
                     $request->merge(['fecha_evento' => $solicitud->fecha_evento]);
                 }
+                if (!$request->filled('dias_evento') && $solicitud->dias_evento) {
+                    $request->merge(['dias_evento' => $solicitud->dias_evento]);
+                }
                 if (!$request->filled('organizador_nombre') && $solicitud->organizador_nombre) {
                     $request->merge(['organizador_nombre' => $solicitud->organizador_nombre]);
                 }
@@ -140,6 +143,7 @@ class LicenciaController extends Controller
             $rules['nombre_establecimiento'] = 'required';
             $rules['nombre_evento']          = 'required';
             $rules['fecha_evento']           = 'required|date';
+            $rules['dias_evento']            = 'nullable|integer|min:1|max:365';
             $rules['organizador_nombre']     = 'required';
             $rules['organizador_dni']        = 'required';
             $rules['numero_informe_ecse']    = 'required';

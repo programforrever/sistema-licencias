@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud Enviada - Municipalidad</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ asset('css/fontawesome.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+        .fa, .fas, .far, .fab, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fa-sharp { font-family: var(--fa-style-family,"Font Awesome 6 Free") !important; }
 
         :root {
             --brand:        #2563eb;
@@ -223,8 +224,103 @@
             margin-bottom: 1.5rem;
         }
 
+        .ticket-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .ticket-header-text {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ticket-header-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .ticket-preview-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .ticket-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn-ticket {
+            background: var(--success-main);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .btn-ticket:hover {
+            background: var(--green-main);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(18, 150, 29, 0.3);
+            color: white;
+        }
+
+        .btn-ticket-secondary {
+            background: var(--bg);
+            color: var(--text-main);
+            border: 1.5px solid var(--green-main);
+        }
+
+        .btn-ticket-secondary:hover {
+            background: var(--success-light);
+            border-color: var(--green-main);
+        }
+
+        .ticket-info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: var(--success-light);
+            color: var(--green-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 768px) {
             .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            .ticket-actions {
                 grid-template-columns: 1fr;
             }
             .codigo-text {
@@ -314,6 +410,36 @@
                     El equipo de la municipalidad revisará tu solicitud y te notificará al WhatsApp <strong>+51 9 {{ $solicitud->telefono_whatsapp }}</strong>.
                 </div>
 
+                <!-- SECCIÓN DE TICKET DE PAGO -->
+                <div class="ticket-section">
+                    <div class="ticket-header-text">
+                        <i class="fas fa-receipt"></i> Tu Ticket de Pago
+                    </div>
+                    <div class="ticket-header-subtitle">
+                        Este ticket contiene tu código de seguimiento y un QR para acceder a tu trámite
+                    </div>
+
+                    <div class="ticket-info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        Guarda este ticket como comprobante de tu pago
+                    </div>
+
+                    <!-- Preview del Ticket -->
+                    <div class="ticket-preview-box" id="ticket-preview">
+                        @include('solicitudes.ticket-mini', ['solicitud' => $solicitud])
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="ticket-actions">
+                        <button onclick="imprimirTicket()" class="btn-ticket">
+                            <i class="fas fa-print"></i> Imprimir Ticket
+                        </button>
+                        <button onclick="copiarCodigo()" class="btn-ticket btn-ticket-secondary">
+                            <i class="fas fa-copy"></i> Copiar Código
+                        </button>
+                    </div>
+                </div>
+
                 <div class="action-buttons">
                     <a href="{{ route('solicitudes.seguimiento') }}?codigo={{ $solicitud->codigo_seguimiento }}" class="btn-primary-custom" style="justify-self: start;">
                         <i class="fas fa-search"></i> Ver Estado
@@ -327,5 +453,129 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Función para imprimir el ticket
+    function imprimirTicket() {
+        const contenido = document.getElementById('ticket-preview').innerHTML;
+        const ventana = window.open('', '', 'height=800,width=900');
+        
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Ticket de Pago - {{ $solicitud->codigo_seguimiento }}</title>
+                <link href="{{ asset('css/fontawesome.min.css') }}" rel="stylesheet">
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        background: #f5f5f5;
+                    }
+                    @media print {
+                        body {
+                            background: white;
+                            padding: 0;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                ${contenido}
+            </body>
+            </html>
+        `;
+        
+        ventana.document.write(html);
+        ventana.document.close();
+        setTimeout(() => ventana.print(), 500);
+    }
+
+    // Función para copiar el código de seguimiento
+    function copiarCodigo() {
+        const codigo = '{{ $solicitud->codigo_seguimiento }}';
+        const mensajeExito = String.fromCharCode(10003) + ' Código copiado al portapapeles';
+        const mensajeError = String.fromCharCode(10005) + ' No se pudo copiar el código';
+        
+        // Usar la API de Clipboard si está disponible
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(codigo).then(() => {
+                mostrarToast(mensajeExito, 'success');
+            }).catch(err => {
+                fallbackCopy(codigo, mensajeExito, mensajeError);
+            });
+        } else {
+            // Fallback para navegadores antiguos
+            fallbackCopy(codigo, mensajeExito, mensajeError);
+        }
+    }
+
+    // Fallback para copiar texto
+    function fallbackCopy(texto, mensajeExito, mensajeError) {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+            document.execCommand('copy');
+            mostrarToast(mensajeExito, 'success');
+        } catch (err) {
+            mostrarToast(mensajeError, 'error');
+        }
+        
+        document.body.removeChild(textarea);
+    }
+
+    // Función para mostrar notificaciones toast
+    function mostrarToast(mensaje, tipo = 'info') {
+        const bgColor = tipo === 'success' ? '#10b981' : tipo === 'error' ? '#ef4444' : '#3b82f6';
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: ' + bgColor + '; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; z-index: 9999; animation: slideInRight 0.3s ease-out; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        
+        toast.textContent = mensaje;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+
+    // Agregar animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
 </body>
 </html>

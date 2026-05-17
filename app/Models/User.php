@@ -26,4 +26,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relación con la firma digital del usuario
+     */
+    public function signature()
+    {
+        return $this->hasOne(UserSignature::class);
+    }
+
+    /**
+     * Relación con los certificados que este usuario ha firmado
+     */
+    public function licenciasFirmadas()
+    {
+        return $this->hasMany(Licencia::class, 'signed_by_user_id');
+    }
 }
