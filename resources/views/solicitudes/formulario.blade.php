@@ -14,6 +14,8 @@
 
     <!-- Fallback icons via CSS if FontAwesome fails -->
     <style>
+
+        
         /* Icon display fallback */
         i[class*="fas "], i[class*="fab "], i[class*="far "] {
             display: inline-block;
@@ -485,6 +487,94 @@
             .drag-drop-zone { padding: 20px 15px; min-height: 150px; }
             .drag-drop-zone i { font-size: 2rem; }
         }
+
+
+
+
+
+
+
+
+
+        
+
+#paso3 .form-card {
+    background: #ffffff !important;
+}
+
+/* AGREGA ESTO NUEVO */
+#datos-negocio,
+#datos-evento {
+    background: #ffffff !important;
+    border-radius: 8px;
+}
+
+.form-card > .row,
+.form-card .row {
+    background: #ffffff !important;
+}
+/* SOLO esto para el paso 3 */
+#paso3 .form-card {
+    background: 
+#ffffff !important;
+}
+#datos-negocio,
+#datos-evento {
+    background: #ffffff !important;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+#datos-negocio .section-title,
+#datos-evento .section-title {
+    margin-top: 16px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* letras */
+#datos-negocio .row,
+#datos-evento .row {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+
+
+
+#precio-box {
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-bottom: 24px;
+    margin-top: 12px;
+    border-radius: 12px;
+}
+
+#datos-negocio {
+    padding-bottom: 12px;
+}
+
     </style>
 </head>
 <body>
