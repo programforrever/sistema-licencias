@@ -652,8 +652,6 @@ function toggleCheck(id) {
 
 function descargarPDF() {
   const el = document.getElementById('documento');
-
-  // Clonar el elemento para renderizarlo sin restricciones de posición
   const clone = el.cloneNode(true);
   clone.style.position = 'fixed';
   clone.style.top = '0';
@@ -675,56 +673,81 @@ function descargarPDF() {
     margin:      [0, 0, 0, 0],
     filename:    'FUT_Municipalidad_MAACD.pdf',
     image:       { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      width: w,
-      height: h,
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0
-    },
-    jsPDF: {
-      unit: 'px',
-      format: [w * 2, h * 2],
-      orientation: 'portrait',
-      hotfixes: ['px_scaling']
-    }
+    html2canvas: { scale: 2, useCORS: true, letterRendering: true, width: w, height: h, scrollX: 0, scrollY: 0, x: 0, y: 0 },
+    jsPDF: { unit: 'px', format: [w * 2, h * 2], orientation: 'portrait', hotfixes: ['px_scaling'] }
   };
 
-  html2pdf()
-    .set(opt)
-    .from(clone)
-    .save()
-    .finally(function() {
-      document.body.removeChild(clone);
-    });
+  html2pdf().set(opt).from(clone).save().finally(function() {
+    document.body.removeChild(clone);
+  });
 }
 
 function limpiarFormulario() {
   if (!confirm('¿Deseas limpiar todos los campos?')) return;
-  document.querySelectorAll('#documento input').forEach(i => i.value = '');
+  document.querySelectorAll('#documento input, #documento textarea').forEach(i => i.value = '');
   document.querySelectorAll('.doc-check').forEach(el => {
     el.classList.remove('checked');
     el.textContent = '';
   });
 }
 
-// Auto-rellenar cargo desde datos del solicitante
-document.getElementById('titular').addEventListener('input', function() {
-  document.getElementById('cargo-solicitante').value = this.value;
-});
-document.getElementById('solicito').addEventListener('input', function() {
-  document.getElementById('cargo-solicita').value = this.value;
+// ===== MAYÚSCULAS AUTOMÁTICAS =====
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#documento input[type="text"], #documento input[type="tel"], #documento input[type="email"]').forEach(function(input) {
+    input.addEventListener('input', function() {
+      const pos = this.selectionStart;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(pos, pos);
+    });
+  });
 });
 
-// Prellenar datos desde URL query parameters
+// ===== DETALLE: saltar a siguiente línea al llegar al límite =====
+document.addEventListener('DOMContentLoaded', function() {
+  const lineas = document.querySelectorAll('.detalle-lines .line-row input');
+  
+  lineas.forEach(function(input, index) {
+    input.addEventListener('input', function() {
+      // Mayúsculas
+      const pos = this.selectionStart;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(pos, pos);
+
+      // Si el texto supera el ancho del input, mover exceso a la siguiente línea
+      if (this.value.length >= 80 && index < lineas.length - 1) {
+        const exceso = this.value.substring(80);
+        this.value = this.value.substring(0, 80);
+        lineas[index + 1].value = exceso + lineas[index + 1].value;
+        lineas[index + 1].focus();
+        lineas[index + 1].setSelectionRange(exceso.length, exceso.length);
+      }
+    });
+
+    // Backspace: si está vacío, subir a la línea anterior
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && this.value === '' && index > 0) {
+        lineas[index - 1].focus();
+        const len = lineas[index - 1].value.length;
+        lineas[index - 1].setSelectionRange(len, len);
+      }
+    });
+  });
+});
+
+// Auto-rellenar cargo desde datos del solicitante
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('titular').addEventListener('input', function() {
+    document.getElementById('cargo-solicitante').value = this.value.toUpperCase();
+  });
+  document.getElementById('solicito').addEventListener('input', function() {
+    document.getElementById('cargo-solicita').value = this.value.toUpperCase();
+  });
+});
+
+// ===== PRELLENAR DESDE URL (sin texto por defecto) =====
 window.addEventListener('load', function() {
   const params = new URLSearchParams(window.location.search);
-  
-  // Mapear parámetros del URL a IDs del formulario
+
   const mappings = {
     'nombres_solicitante': 'titular',
     'representante': 'representante',
@@ -732,34 +755,25 @@ window.addEventListener('load', function() {
     'direccion': 'domicilio',
     'telefono_whatsapp': 'telefono',
     'email': 'correo',
-    'nombre_comercial': 'solicitante-nombre-comercial',
-    'actividad': 'solicitante-actividad',
-    'area_edificacion': 'solicitante-area',
-    'nombre_evento': 'evento-nombre',
-    'fecha_evento': 'evento-fecha',
     'solicitud': 'solicito'
   };
-  
-  // Rellenar cada campo si viene en URL
+
   for (let [paramKey, fieldId] of Object.entries(mappings)) {
     const value = params.get(paramKey);
     if (value) {
       const field = document.getElementById(fieldId);
-      if (field) {
-        field.value = decodeURIComponent(value);
-      }
+      if (field) field.value = decodeURIComponent(value).toUpperCase();
     }
   }
-  
-  // Si hay detalle, rellenarlo en las líneas de "Detalle de lo solicitado"
-  const detalle = params.get('detalle');
-  if (detalle) {
-    const detalleLines = document.querySelectorAll('.detalle-lines .line-row input');
-    const detalleTexto = decodeURIComponent(detalle);
-    if (detalleLines.length > 0) {
-      detalleLines[0].value = detalleTexto;
-    }
-  }
+
+  // DETALLE siempre vacío
+  document.querySelectorAll('.detalle-lines .line-row input').forEach(i => i.value = '');
+
+  // Sincronizar cargo
+  const titular = document.getElementById('titular');
+  const solicito = document.getElementById('solicito');
+  if (titular) document.getElementById('cargo-solicitante').value = titular.value;
+  if (solicito) document.getElementById('cargo-solicita').value = solicito.value;
 });
 </script>
 </body>
