@@ -93,6 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('solicitudes/{solicitud}/procesar', [SolicitudController::class, 'procesarEstado'])->name('solicitudes.procesar');
     Route::post('solicitudes/{solicitud}/enviar-revision', [SolicitudController::class, 'enviarARevision'])->name('solicitudes.enviar-revision');
     Route::post('solicitudes/{solicitud}/actualizar-pago', [SolicitudController::class, 'actualizarEstadoPago'])->name('solicitudes.actualizar-pago');
+    Route::get('solicitudes/{solicitud}/descargar/{tipo}', [SolicitudController::class, 'descargarDocumento'])->name('solicitudes.descargar');
     
     // API Notificaciones (polling)
     Route::get('api/notificaciones/nuevas-solicitudes', [SolicitudController::class, 'obtenerNuevasSolicitudes'])->name('api.notificaciones.nuevas-solicitudes');

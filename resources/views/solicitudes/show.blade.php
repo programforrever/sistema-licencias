@@ -151,35 +151,35 @@
                 <div class="row g-2">
                     @if($solicitud->doc_solicitud)
                     <div class="col-md-4">
-                        <a href="{{ asset('storage/' . $solicitud->doc_solicitud) }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <a href="{{ route('solicitudes.descargar', ['solicitud' => $solicitud, 'tipo' => 'doc_solicitud']) }}" target="_blank" class="btn btn-outline-primary w-100">
                             <i class="fas fa-file me-2"></i>Solicitud / FUT
                         </a>
                     </div>
                     @endif
                     @if($solicitud->doc_plano)
                     <div class="col-md-4">
-                        <a href="{{ asset('storage/' . $solicitud->doc_plano) }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <a href="{{ route('solicitudes.descargar', ['solicitud' => $solicitud, 'tipo' => 'doc_plano']) }}" target="_blank" class="btn btn-outline-primary w-100">
                             <i class="fas fa-file me-2"></i>Plano / Croquis
                         </a>
                     </div>
                     @endif
                     @if($solicitud->doc_dni_copia)
                     <div class="col-md-4">
-                        <a href="{{ asset('storage/' . $solicitud->doc_dni_copia) }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <a href="{{ route('solicitudes.descargar', ['solicitud' => $solicitud, 'tipo' => 'doc_dni_copia']) }}" target="_blank" class="btn btn-outline-primary w-100">
                             <i class="fas fa-id-card me-2"></i>DNI Copia
                         </a>
                     </div>
                     @endif
                     @if($solicitud->doc_comprobante_pago)
                     <div class="col-md-4">
-                        <a href="{{ asset('storage/' . $solicitud->doc_comprobante_pago) }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <a href="{{ route('solicitudes.descargar', ['solicitud' => $solicitud, 'tipo' => 'doc_comprobante_pago']) }}" target="_blank" class="btn btn-outline-primary w-100">
                             <i class="fas fa-receipt me-2"></i>Comprobante de Pago
                         </a>
                     </div>
                     @endif
                     @if($solicitud->doc_otros)
                     <div class="col-md-4">
-                        <a href="{{ asset('storage/' . $solicitud->doc_otros) }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <a href="{{ route('solicitudes.descargar', ['solicitud' => $solicitud, 'tipo' => 'doc_otros']) }}" target="_blank" class="btn btn-outline-primary w-100">
                             <i class="fas fa-file me-2"></i>Otros documentos
                         </a>
                     </div>
