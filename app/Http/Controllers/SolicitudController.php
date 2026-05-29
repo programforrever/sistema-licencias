@@ -654,4 +654,38 @@ class SolicitudController extends Controller
             return back()->with('error', '❌ Error al guardar comprobante: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Descargar documento adjunto de solicitud (protegido)
+     */
+    public function descargarDocumento(Solicitud $solicitud, $tipo)
+    {
+        try {
+            // Tipos de documentos permitidos
+            $tiposPermitidos = ['doc_solicitud', 'doc_plano', 'doc_dni_copia', 'doc_comprobante_pago', 'doc_otros', 'doc_comprobante_yape'];
+            
+            if (!in_array($tipo, $tiposPermitidos)) {
+                abort(404, 'Tipo de documento no válido');
+            }
+
+            // Obtener la ruta del archivo
+            $rutaArchivo = $solicitud->$tipo;
+            
+            if (!$rutaArchivo) {
+                abort(404, 'Documento no encontrado');
+            }
+
+            // Verificar que el archivo existe en storage
+            if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($rutaArchivo)) {
+                abort(404, 'Archivo no encontrado en el sistema');
+            }
+
+            // Abrir el archivo en el navegador (inline) en lugar de descargar
+            return \Illuminate\Support\Facades\Storage::disk('public')->response($rutaArchivo);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error descargarDocumento: " . $e->getMessage());
+            abort(500, 'Error al abrir el documento');
+        }
+    }
 }

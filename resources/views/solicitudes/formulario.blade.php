@@ -1027,11 +1027,16 @@
 
                         <hr class="my-4">
 
-                        <!-- Otros Documentos (Opcional) -->
+                        <!-- Certificado de Garantía y Operatividad -->
                         <div class="col-lg-6 mb-4">
-                            <label class="form-label fw-bold" style="color: #999; font-size: 1rem;"><i class="fas fa-file me-2"></i>5. Otros Documentos <small class="text-muted">(Opcional)</small></label>
-                            <div class="drag-drop-zone" id="drop-otros" data-field="doc_otros" style="background-color: rgba(255, 193, 7, 0.08); border-color: #ffc107;">
-                                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #ffc107; margin-bottom: 0.5rem;"></i>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                <label class="form-label fw-bold mb-0" style="color: #12961d; font-size: 1rem;"><i class="fas fa-file-check me-2"></i>5. Adjuntar Certificado de Garantía y Operatividad <small class="text-muted">(Opcional)</small></label>
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="abrirPlantillaCertificado()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                                    <i class="fas fa-download me-1"></i>Descargar Plantilla
+                                </button>
+                            </div>
+                            <div class="drag-drop-zone" id="drop-otros" data-field="doc_otros" style="background-color: rgba(18, 150, 29, 0.08); border-color: #12961d;">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #12961d; margin-bottom: 0.5rem;"></i>
                                 <p class="fw-bold mb-1">Arrastra archivos adicionales</p>
                                 <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
                                 <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
@@ -1592,6 +1597,17 @@ function abrirPlantillaITCE() {
 
     // Abrir en nueva pestaña
     window.open(url, '_blank');
+}
+
+// ===== ABRIR PLANTILLA CERTIFICADO DE GARANTÍA Y OPERATIVIDAD =====
+function abrirPlantillaCertificado() {
+    // Descargar el PDF directamente desde public/plantillas
+    const link = document.createElement('a');
+    link.href = '{{ asset("plantillas/extintor.pdf") }}';
+    link.download = 'Plantilla_Certificado_Garantia_Operatividad_Extintores.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // ===== COPIA DE DATOS ANTES DE ENVIAR =====

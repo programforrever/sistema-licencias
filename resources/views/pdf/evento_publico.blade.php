@@ -83,42 +83,31 @@
             padding: 0 3px 1px 3px;
         }
 
-        /* FIRMAS */
-        .firmas-table {
-            width: 100%;
-            margin-top: 190px;
-            border-collapse: collapse;
-        }
-        .firmas-table td {
-            vertical-align: bottom;
+        /* QR CENTRADO */
+        .qr-container {
             text-align: center;
-            padding: 0 8px;
+            margin-top: 20px;
+            padding: 15px 0;
         }
-        .firma-espacio { height: 50px; }
-        .firma-linea {
-            border-top: 1px solid #000;
-            padding-top: 15px;
-            font-size: 12px;
-            font-weight: bold;
-            line-height: 1.5;
+        .qr-container img {
+            width: 120px;
+            height: 120px;
         }
-        .qr-td {
-            vertical-align: middle !important;
-            text-align: center;
+        .qr-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
         }
-        .qr-td img { display: block; margin: 18px auto 10px auto; }
-        .qr-td span { font-size: 12px; color: #0e0101ff; }
 
         /* NOTA */
         .nota {
-            margin-top: 100px;
+            margin-top: 20px;
             font-size: 11px;
             border-top: 0px solid #ccc;
             padding-top: 0px;
             line-height: 1.5;
             margin-right: 30px;
             margin-left: 75px;
-            
         }
     </style>
 </head>
@@ -242,29 +231,11 @@
     </table>
 </div>
 
-<!-- FIRMAS Y QR -->
-<table class="firmas-table">
-    <tr>
-        <td style="width:38%;">
-            <div class="firma-espacio"></div>
-            <div class="firma-linea">
-                Ing. RESPONSABLE TÉCNICO<br>
-                Secretario Técnico de Defensa Civil y G.R.D.
-            </div>
-        </td>
-        <td style="width:24%;" class="qr-td">
-            <img src="data:{{ $mimeType }};base64,{{ $qr }}" width="90" height="90">
-            <span>Escanea para verificar</span>
-        </td>
-        <td style="width:38%;">
-            <div class="firma-espacio"></div>
-            <div class="firma-linea">
-                FIRMA Y SELLO<br>
-                Responsable del Órgano Ejecutante
-            </div>
-        </td>
-    </tr>
-</table>
+<!-- QR CENTRADO -->
+<div class="qr-container">
+    <img src="data:{{ $mimeType }};base64,{{ $qr }}" alt="QR Code">
+    <div class="qr-label">Escanea para verificar el certificado</div>
+</div>
 
 <!-- NOTA -->
 <div class="nota">
@@ -276,9 +247,8 @@
     derecho sin reclamo alguno y dará mérito a asumir acciones legales y penales.
 </div>
 
-<!-- FRANJAS INFERIORES -->
+<!-- FRANJA INFERIOR -->
 <div style="margin-top:10px;">
-    
     <div class="franja-azul"></div>
 </div>
 

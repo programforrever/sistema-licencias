@@ -72,10 +72,15 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Actividad Económica</label>
-                            <select name="actividad_economica_id" class="form-select select2 @error('actividad_economica_id') is-invalid @enderror" required>
+                            <select name="actividad_economica_id" class="form-select select2 @error('actividad_economica_id') is-invalid @enderror" required id="actividad_economica_select">
                                 <option value="">-- Seleccionar --</option>
                                 @foreach($actividades as $a)
-                                <option value="{{ $a->id }}" {{ old('actividad_economica_id') == $a->id ? 'selected' : '' }}>
+                                <option value="{{ $a->id }}" data-tipo="itce" {{ old('actividad_economica_id') == $a->id ? 'selected' : '' }}>
+                                    {{ $a->codigo }} - {{ $a->descripcion }}
+                                </option>
+                                @endforeach
+                                @foreach($actividadesEventos as $a)
+                                <option value="{{ $a->id }}" data-tipo="evento" {{ old('actividad_economica_id') == $a->id ? 'selected' : '' }}>
                                     {{ $a->codigo }} - {{ $a->descripcion }}
                                 </option>
                                 @endforeach
@@ -251,6 +256,51 @@
         const esEvento = tipo === 'evento_publico';
         document.getElementById('campos-anexo').style.display = esEvento ? 'none' : 'block';
         document.getElementById('campos-evento').style.display = esEvento ? 'block' : 'none';
+        
+        // Filtrar actividades económicas según el tipo de certificado
+        filterActividadesEconomicas(tipo);
+    }
+
+    function filterActividadesEconomicas(tipo) {
+        const select = document.getElementById('actividad_economica_select');
+        const options = select.querySelectorAll('option');
+        const selectedValue = select.value;
+        let hasValidOption = false;
+
+        options.forEach(option => {
+            if (option.value === '') {
+                option.style.display = 'block'; // Mostrar opción vacía siempre
+                return;
+            }
+
+            const tipoOption = option.dataset.tipo;
+            
+            if (tipo === 'evento_publico') {
+                // Para eventos, mostrar solo opciones de tipo 'evento'
+                if (tipoOption === 'evento') {
+                    option.style.display = 'block';
+                    hasValidOption = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            } else {
+                // Para ITCE 13 y 14, mostrar todas las opciones de tipo 'itce'
+                if (tipoOption === 'itce') {
+                    option.style.display = 'block';
+                    hasValidOption = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        });
+
+        // Si la opción seleccionada no es válida para el tipo actual, limpiar la selección
+        if (selectedValue) {
+            const selectedOption = select.querySelector(`option[value="${selectedValue}"]`);
+            if (selectedOption && selectedOption.style.display === 'none') {
+                select.value = '';
+            }
+        }
     }
 
     document.querySelectorAll('input[name="tipo_certificado"]').forEach(function(radio) {

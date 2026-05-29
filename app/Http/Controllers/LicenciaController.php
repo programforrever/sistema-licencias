@@ -49,16 +49,18 @@ class LicenciaController extends Controller
     public function create()
     {
         $contribuyentes = Contribuyente::all();
-        $actividades    = ActividadEconomica::all();
+        $actividades    = ActividadEconomica::whereNotIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
+        $actividadesEventos = ActividadEconomica::whereIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
         $solicitud      = null;
         $contribuyentePrellenado = null;
-        return view('licencias.create', compact('contribuyentes', 'actividades', 'solicitud', 'contribuyentePrellenado'));
+        return view('licencias.create', compact('contribuyentes', 'actividades', 'actividadesEventos', 'solicitud', 'contribuyentePrellenado'));
     }
 
     public function crearDesdeSolicitud(Solicitud $solicitud)
     {
         $contribuyentes = Contribuyente::all();
-        $actividades    = ActividadEconomica::all();
+        $actividades    = ActividadEconomica::whereNotIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
+        $actividadesEventos = ActividadEconomica::whereIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
         
         // Buscar contribuyente por DNI de la solicitud
         $contribuyentePrellenado = Contribuyente::where('dni_ruc', $solicitud->dni_ruc)->first();
@@ -79,7 +81,7 @@ class LicenciaController extends Controller
             $contribuyentes = Contribuyente::all();
         }
         
-        return view('licencias.create', compact('contribuyentes', 'actividades', 'solicitud', 'contribuyentePrellenado'));
+        return view('licencias.create', compact('contribuyentes', 'actividades', 'actividadesEventos', 'solicitud', 'contribuyentePrellenado'));
     }
 
     public function store(Request $request)
@@ -188,8 +190,9 @@ class LicenciaController extends Controller
     public function edit(Licencia $licencia)
     {
         $contribuyentes = Contribuyente::all();
-        $actividades    = ActividadEconomica::all();
-        return view('licencias.edit', compact('licencia', 'contribuyentes', 'actividades'));
+        $actividades    = ActividadEconomica::whereNotIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
+        $actividadesEventos = ActividadEconomica::whereIn('descripcion', ['Evento Deportivo', 'Evento No Deportivo'])->get();
+        return view('licencias.edit', compact('licencia', 'contribuyentes', 'actividades', 'actividadesEventos'));
     }
 
     public function update(Request $request, Licencia $licencia)

@@ -241,12 +241,20 @@
                 <div class="col-md-6">
                     <div class="field-wrap">
                         <label class="field-label">Actividad Económica</label>
-                        <select name="actividad_economica_id" class="form-select" required>
+                        <select id="actividad_economica_select" name="actividad_economica_id" class="form-select" required>
+                            <option value="">Seleccionar actividad...</option>
                             @foreach($actividades as $a)
-                            <option value="{{ $a->id }}" {{ $licencia->actividad_economica_id == $a->id ? 'selected' : '' }}>
+                            <option value="{{ $a->id }}" data-tipo="itce" {{ $licencia->actividad_economica_id == $a->id ? 'selected' : '' }}>
                                 {{ $a->codigo }} — {{ $a->descripcion }}
                             </option>
                             @endforeach
+                            @if(isset($actividadesEventos))
+                            @foreach($actividadesEventos as $a)
+                            <option value="{{ $a->id }}" data-tipo="evento" {{ $licencia->actividad_economica_id == $a->id ? 'selected' : '' }}>
+                                {{ $a->codigo }} — {{ $a->descripcion }}
+                            </option>
+                            @endforeach
+                            @endif
                         </select>
                     </div>
                 </div>
@@ -460,5 +468,40 @@
     </div>
 
 </form>
+
+<script>
+/**
+ * Filtrar actividades económicas según el tipo de certificado
+ */
+function filterActividadesEconomicas() {
+    const tipoInput = document.querySelector('input[name="tipo_certificado"]');
+    const tipo = tipoInput ? tipoInput.value : '';
+    const select = document.getElementById('actividad_economica_select');
+    
+    if (!select) return;
+    
+    const options = select.querySelectorAll('option');
+    
+    options.forEach(option => {
+        if (option.value === '') return; // Siempre mostrar opción vacía
+        const tipoOption = option.dataset.tipo;
+        
+        if (tipo === 'evento_publico') {
+            option.style.display = tipoOption === 'evento' ? 'block' : 'none';
+        } else {
+            option.style.display = tipoOption === 'itce' ? 'block' : 'none';
+        }
+    });
+    
+    // Si la opción actualmente seleccionada no es compatible, resetear
+    const selectedOption = select.querySelector('option:checked');
+    if (selectedOption && selectedOption.style.display === 'none') {
+        select.value = '';
+    }
+}
+
+// Ejecutar filtrado al cargar la página
+document.addEventListener('DOMContentLoaded', filterActividadesEconomicas);
+</script>
 
 @endsection

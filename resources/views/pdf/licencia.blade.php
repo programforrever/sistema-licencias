@@ -10,15 +10,17 @@
             color: #000;
             margin: 0;
             padding: 0;
+            page-break-after: avoid;
+            overflow: hidden;
         }
 
         @page {
-    margin-top: 10cm;
-    margin-bottom: 10cm;
-    margin-left: 20.54cm;
-    margin-right: 20.54cm;
-
-            
+            margin-top: 10cm;
+            margin-bottom: 10cm;
+            margin-left: 20.54cm;
+            margin-right: 20.54cm;
+            orphans: 0;
+            widows: 0;
         }
 
         /* HEADER */
@@ -62,15 +64,16 @@
         .vigencia-right { text-align: right; font-weight: bold; }
 
         /* FIRMAS */
-        .firmas-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        .firmas-table { width: 100%; margin-top: 8px; border-collapse: collapse; page-break-inside: avoid; }
         .firmas-table td { vertical-align: bottom; text-align: center; padding: 0 10px; }
         .firma-linea { border-top: 1px solid #000; padding-top: 4px; font-size: 9px; line-height: 1.4; }
 
         /* NOTAS */
-        .notas { margin-top: 5px; font-size: 8px; text-align: 5px; border-top: 5px solid #ccc; padding-top: 6px; line-height: 1.4; }
+        .notas { margin-top: 3px; margin-left: 40px; margin-right: 40px; font-size: 8px; text-align: left; border-top: 1px solid #ccc; padding-top: 3px; line-height: 1.3; page-break-inside: avoid; }
+        .notas p { margin: 0; padding: 0; }
 
         /* FOOTER */
-        .footer { margin-top: 0px; text-align: right; }
+        .footer { margin-top: 0px; text-align: right; display: none; }
         .footer img { width: 0px; height: auto; }
         .footer span { font-size: 0px; font-style: italic; color: #1a3c6e; vertical-align: middle; margin-left: 50px; }
 
@@ -237,8 +240,8 @@
         <td style="width:50%; text-align:center;">
             <br><br><br>
             <div class="firma-linea">
-                Ing. RESPONSABLE TÉCNICO<br>
-                Secretario Técnico de Defensa Civil y G.R.D.
+                <strong>Ing. RESPONSABLE TÉCNICO</strong><br>
+                <strong>Secretario Técnico de Defensa Civil y G.R.D.</strong>
             </div>
         </td>
         <td style="width:50%; text-align:center; vertical-align:middle;">
@@ -250,11 +253,11 @@
 
 {{-- NOTAS --}}
 <div class="notas">
-    <strong>*El presente Certificado de ITSE no constituye autorización alguna para el funcionamiento del Establecimiento Objeto de Inspección o para el inicio de la actividad</strong><br><br>
-    <strong>NOTA:</strong><br>
-    - DE ACUERDO A LO ESTABLECIDO EN EL REGLAMENTO DE INSPECCIONES TÉCNICAS DE SEGURIDAD EN EDIFICACIONES APROBADO POR DECRETO SUPREMO N° 002-2018 PCM, EL PRESENTE CERTIFICADO DEBERÁ SER FIRMADO POR EL RESPONSABLE DEL ÓRGANO EJECUTANTE.<br>
-    - ESTE CERTIFICADO DEBERÁ COLOCARSE EN UN LUGAR VISIBLE DENTRO DEL ESTABLECIMIENTO OBJETO DE INSPECCIÓN.<br>
-    - CUALQUIER TACHA O ENMENDADURA INVALIDA EL PRESENTE CERTIFICADO.
+    <p><strong>*El presente Certificado de ITSE no constituye autorización alguna para el funcionamiento del Establecimiento Objeto de Inspección o para el inicio de la actividad</strong></p>
+    <p style="margin-top: 2px;"><strong>NOTA:</strong></p>
+    <p style="margin-top: 1px; font-size: 7px;">DE ACUERDO A LO ESTABLECIDO EN EL REGLAMENTO DE INSPECCIONES TÉCNICAS DE SEGURIDAD EN EDIFICACIONES APROBADO POR DECRETO SUPREMO N° 002-2018 PCM, EL PRESENTE CERTIFICADO DEBERÁ SER FIRMADO POR EL RESPONSABLE DEL ÓRGANO EJECUTANTE.</p>
+    <p style="margin-top: 1px; font-size: 7px;">ESTE CERTIFICADO DEBERÁ COLOCARSE EN UN LUGAR VISIBLE DENTRO DEL ESTABLECIMIENTO OBJETO DE INSPECCIÓN.</p>
+    <p style="margin-top: 1px; font-size: 7px;">CUALQUIER TACHA O ENMENDADURA INVALIDA EL PRESENTE CERTIFICADO.</p>
 </div>
 
 {{-- FOOTER --}}
@@ -264,9 +267,8 @@
 </div>
 
 <!-- FRANJAS INFERIORES -->
-<div style="margin-top:8px;">
+<div style="margin-top:0px; page-break-inside: avoid;">
     <div class="franja-azul"></div>
-    <div class="franja-dorada"></div>
 </div>
 
 </body>
