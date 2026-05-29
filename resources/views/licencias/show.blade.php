@@ -271,6 +271,9 @@
         <a href="{{ route('licencias.pdf', $licencia) }}" class="btn-hdr pdf" target="_blank">
             <i class="fas fa-file-pdf"></i> Generar PDF
         </a>
+
+
+
     {{-- ── Botón de apertura firmaperu ── --}}
 <button onclick="abrirFirmaPeru()" class="btn btn-primary">
 Abrir firmaPeru.exe
@@ -282,6 +285,7 @@ function abrirFirmaPeru() {
 }
 
 </script>
+
 
 
 

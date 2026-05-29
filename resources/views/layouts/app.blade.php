@@ -1564,13 +1564,7 @@ function toggleSidebar() {
 </body>
 </html>
 
-        'fa-school': '🏫',
-        'fa-gas-pump': '⛽',
-        'fa-download': '⬇️',
-        'fa-print': '🖨️',
-        'fa-copy': '📋',
-        'fa-check': '✅'
-    };
+        
 
 <!-- Inicializar Select2 -->
 <script>
