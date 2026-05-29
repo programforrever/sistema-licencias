@@ -271,6 +271,23 @@
         <a href="{{ route('licencias.pdf', $licencia) }}" class="btn-hdr pdf" target="_blank">
             <i class="fas fa-file-pdf"></i> Generar PDF
         </a>
+    {{-- ── Botón de apertura firmaperu ── --}}
+<button onclick="abrirFirmaPeru()" class="btn btn-primary">
+Abrir firmaPeru.exe
+</button>
+
+<script>
+function abrirFirmaPeru() {
+    window.location.href = 'firmaperu://abrir';
+}
+
+</script>
+
+
+
+
+
+
     </div>
 </div>
 
@@ -423,6 +440,10 @@
                             <span style="display: inline-block; background: #dcfce7; color: #166534; padding: .3rem .6rem; border-radius: 4px; font-size: .8rem; font-weight: 600;">
                                 ✓ FIRMADO
                             </span>
+                        @elseif($licencia->signature_status === 'firmado_adjunto')
+                            <span style="display: inline-block; background: #d1fae5; color: #065f46; padding: .3rem .6rem; border-radius: 4px; font-size: .8rem; font-weight: 600;">
+                                📎 FIRMADO ADJUNTO
+                            </span>
                         @else
                             <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: .3rem .6rem; border-radius: 4px; font-size: .8rem; font-weight: 600;">
                                 ⏳ PENDIENTE
@@ -431,7 +452,7 @@
                     </span>
                 </div>
 
-                @if($licencia->signature_status === 'firmado' && $licencia->signedByUser)
+                @if(($licencia->signature_status === 'firmado' || $licencia->signature_status === 'firmado_adjunto') && $licencia->signedByUser)
                 <div class="data-row">
                     <span class="dr-label">Firmado por</span>
                     <span class="dr-value">{{ $licencia->signedByUser->name }}</span>
@@ -439,6 +460,36 @@
                 <div class="data-row">
                     <span class="dr-label">Fecha</span>
                     <span class="dr-value">{{ $licencia->signed_at->format('d/m/Y H:i') }}</span>
+                </div>
+                @endif
+
+                {{-- ── ÁREA DRAG & DROP PARA PDF FIRMADO ── --}}
+                @if(auth()->check() && ($licencia->signature_status === 'pendiente' || $licencia->signature_status === 'pendiente_firma'))
+                <div style="margin: 1rem 0 0 0; padding: 1rem; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 6px; text-align: center; cursor: pointer; transition: all .3s;" id="dropZone">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: .5rem;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #6c757d;"></i>
+                        <div>
+                            <p style="margin: 0; font-size: .9rem; font-weight: 600; color: #495057;">Arrastra PDF firmado aquí</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: .8rem; color: #6c757d;">o haz clic para seleccionar</p>
+                        </div>
+                    </div>
+                    <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
+                </div>
+                <div id="uploadProgress" style="display: none; margin-top: 1rem;">
+                    <div style="background: #e7f3ff; border: 1px solid #b3d9ff; padding: .75rem; border-radius: 4px;">
+                        <div style="font-size: .85rem; color: #0066cc; font-weight: 600;">Subiendo archivo...</div>
+                        <div style="width: 100%; height: 6px; background: #d0e4ff; border-radius: 3px; margin-top: .5rem; overflow: hidden;">
+                            <div id="progressBar" style="width: 0%; height: 100%; background: #0066cc; transition: width .3s;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="uploadError" style="display: none; margin-top: 1rem;">
+                    <div style="background: #fee; border: 1px solid #fcc; padding: .75rem; border-radius: 4px; font-size: .85rem; color: #c33;" id="errorMessage"></div>
+                </div>
+                <div id="uploadSuccess" style="display: none; margin-top: 1rem;">
+                    <div style="background: #efe; border: 1px solid #cfc; padding: .75rem; border-radius: 4px; font-size: .85rem; color: #3a3;">
+                        ✓ PDF firmado cargado correctamente. El estado ha sido actualizado a "Firmado Adjunto".
+                    </div>
                 </div>
                 @endif
 
@@ -458,7 +509,8 @@
                     </a>
                     @endif
 
-                    @if($licencia->signature_status === 'firmado' && $licencia->pdf_firmado_path)
+                    {{-- PDF Firmado (firmado o firmado_adjunto) --}}
+                    @if(($licencia->signature_status === 'firmado' || $licencia->signature_status === 'firmado_adjunto') && ($licencia->pdf_firmado_path || $licencia->pdf_adjunto_firmado_path))
                     <a href="{{ route('licencias.descargar', $licencia) }}" style="
                         display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
                         padding: .5rem .75rem;
@@ -471,7 +523,9 @@
                     " onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">
                         <i class="fas fa-check-circle"></i> PDF Firmado
                     </a>
-                    @if(auth()->check() && auth()->user()->signature)
+                    
+                    {{-- Editar firma solo si está completamente firmado (no adjunto) --}}
+                    @if(auth()->check() && auth()->user()->signature && $licencia->signature_status === 'firmado')
                     <a href="{{ route('licencias.firmar', $licencia) }}" style="
                         display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
                         padding: .5rem .75rem;
@@ -485,7 +539,27 @@
                         <i class="fas fa-edit"></i> Editar Firma
                     </a>
                     @endif
-                    @elseif($licencia->signature_status === 'pendiente_firma' && auth()->check())
+                    @endif
+
+                    {{-- Firmar ahora (estado pendiente_firma) --}}
+                    @if($licencia->signature_status === 'pendiente_firma' && auth()->check())
+                    <a href="{{ route('licencias.firmar', $licencia) }}" style="
+                        display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+                        padding: .5rem .75rem;
+                        background: var(--brand); color: #fff;
+                        border: none;
+                        border-radius: var(--radius-sm);
+                        font-size: .8rem; font-weight: 600;
+                        text-decoration: none;
+                        cursor: pointer;
+                        transition: all .15s;
+                    " onmouseover="this.style.background='var(--brand-dark)'" onmouseout="this.style.background='var(--brand)'">
+                        <i class="fas fa-pen-fancy"></i> Firmar Ahora
+                    </a>
+                    @endif
+
+                    {{-- Firmar ahora (estado pendiente y con firma registrada) --}}
+                    @if(auth()->check() && $licencia->signature_status === 'pendiente' && auth()->user()->signature)
                     <a href="{{ route('licencias.firmar', $licencia) }}" style="
                         display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
                         padding: .5rem .75rem;
@@ -532,5 +606,124 @@
 
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const pdfInput = document.getElementById('pdfInput');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadError = document.getElementById('uploadError');
+    const uploadSuccess = document.getElementById('uploadSuccess');
+    const errorMessage = document.getElementById('errorMessage');
+    const progressBar = document.getElementById('progressBar');
+
+    if (!dropZone) return;
+
+    // Click en la zona de drop
+    dropZone.addEventListener('click', () => pdfInput.click());
+
+    // Drag over
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#2563eb';
+        dropZone.style.background = '#e7f3ff';
+    });
+
+    // Drag leave
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#dee2e6';
+        dropZone.style.background = '#f8f9fa';
+    });
+
+    // Drop
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#dee2e6';
+        dropZone.style.background = '#f8f9fa';
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            pdfInput.files = files;
+            subirPDF(files[0]);
+        }
+    });
+
+    // Cambio en input file
+    pdfInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            subirPDF(e.target.files[0]);
+        }
+    });
+
+    function subirPDF(file) {
+        // Validar que sea PDF
+        if (file.type !== 'application/pdf') {
+            mostrarError('Por favor selecciona un archivo PDF válido');
+            return;
+        }
+
+        // Validar tamaño (máximo 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            mostrarError('El archivo no puede exceder 10MB');
+            return;
+        }
+
+        // Preparar FormData
+        const formData = new FormData();
+        formData.append('pdf_adjunto', file);
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+        // Mostrar progreso
+        uploadProgress.style.display = 'block';
+        uploadError.style.display = 'none';
+        uploadSuccess.style.display = 'none';
+
+        // Enviar archivo
+        fetch('{{ route("licencias.adjuntar-pdf-firmado", $licencia) }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => {
+            progressBar.style.width = '100%';
+            return response.json();
+        })
+        .then(data => {
+            uploadProgress.style.display = 'none';
+            
+            if (data.success) {
+                mostrarExito(data.message);
+                // Recargar página después de 2 segundos
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                mostrarError(data.error || 'Error al subir el archivo');
+            }
+        })
+        .catch(error => {
+            uploadProgress.style.display = 'none';
+            mostrarError('Error al procesar la solicitud: ' + error.message);
+        });
+    }
+
+    function mostrarError(mensaje) {
+        uploadError.style.display = 'block';
+        uploadSuccess.style.display = 'none';
+        errorMessage.textContent = '✗ ' + mensaje;
+        progressBar.style.width = '0%';
+    }
+
+    function mostrarExito(mensaje) {
+        uploadError.style.display = 'none';
+        uploadSuccess.style.display = 'block';
+        uploadSuccess.textContent = '✓ ' + mensaje;
+    }
+});
+</script>
 
 @endsection

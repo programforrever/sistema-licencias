@@ -204,6 +204,19 @@
 
         <hr class="ticket-mini-divider">
 
+        <!-- Link Subir Comprobante - Mostrar URL -->
+        <div style="padding: 12px; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);">
+            <div style="font-size: 10px; color: #666; margin-bottom: 6px; font-weight: bold;">SUBIR COMPROBANTE</div>
+            <div style="word-break: break-all; font-size: 9px; background: white; padding: 6px; border-radius: 4px; border: 1px solid #d1fae5;">
+                <a href="{{ route('solicitudes.formulario.comprobante', $solicitud->codigo_seguimiento) }}" target="_blank" 
+                   style="color: #12961d; text-decoration: none; font-weight: bold;">
+                    {{ route('solicitudes.formulario.comprobante', $solicitud->codigo_seguimiento, [], false) }}
+                </a>
+            </div>
+        </div>
+
+        <hr class="ticket-mini-divider">
+
         <!-- Footer -->
         <div class="ticket-mini-footer">
             <p>

@@ -688,9 +688,15 @@
                     <input type="checkbox" name="remember"> Mantener sesión activa
                 </label>
                 @if(Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="forgot-link">
-                        ¿Olvidó su contraseña?
-                    </a>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="{{ route('password.request') }}" class="forgot-link">
+                            <i class="fas fa-link me-1"></i>Enlace por email
+                        </a>
+                        <span style="color: #ddd;">|</span>
+                        <a href="{{ route('password.request-code') }}" class="forgot-link">
+                            <i class="fas fa-key me-1"></i>Código de recuperación
+                        </a>
+                    </div>
                 @endif
             </div>
 

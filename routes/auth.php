@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,22 @@ Route::middleware('guest')->group(function () {
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
+
+    // Nuevas rutas de recuperación con código (Opción 2)
+    Route::get('recuperar-contrasena', [PasswordResetCodeController::class, 'requestCode'])
+        ->name('password.request-code');
+
+    Route::post('recuperar-contrasena/enviar', [PasswordResetCodeController::class, 'sendCode'])
+        ->name('password.send-code');
+
+    Route::get('verificar-codigo', [PasswordResetCodeController::class, 'verifyCode'])
+        ->name('password.verify-code');
+
+    Route::post('verificar-codigo/validar', [PasswordResetCodeController::class, 'validateCode'])
+        ->name('password.validate-code');
+
+    Route::post('verificar-codigo/actualizar', [PasswordResetCodeController::class, 'updatePasswordAfterCode'])
+        ->name('password.update-code');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');

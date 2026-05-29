@@ -24,36 +24,47 @@ class SolicitudController extends Controller
 
     public function enviar(Request $request)
     {
-        // LOG DETALLADO de archivos recibidos
-        Log::info('=== SOLICITUD NUEVA ===');
-        Log::info('Todos los archivos en request:', ['files' => array_keys($request->allFiles())]);
-        Log::info('doc_solicitud:', ['present' => $request->hasFile('doc_solicitud'), 'file' => $request->hasFile('doc_solicitud') ? $request->file('doc_solicitud')->getClientOriginalName() : 'N/A']);
-        Log::info('doc_plano:', ['present' => $request->hasFile('doc_plano'), 'file' => $request->hasFile('doc_plano') ? $request->file('doc_plano')->getClientOriginalName() : 'N/A']);
-        Log::info('doc_dni_copia:', ['present' => $request->hasFile('doc_dni_copia'), 'file' => $request->hasFile('doc_dni_copia') ? $request->file('doc_dni_copia')->getClientOriginalName() : 'N/A']);
-        Log::info('doc_comprobante_pago:', ['present' => $request->hasFile('doc_comprobante_pago'), 'file' => $request->hasFile('doc_comprobante_pago') ? $request->file('doc_comprobante_pago')->getClientOriginalName() : 'N/A']);
-        Log::info('doc_otros:', ['present' => $request->hasFile('doc_otros'), 'file' => $request->hasFile('doc_otros') ? $request->file('doc_otros')->getClientOriginalName() : 'N/A']);
+        try {
+            // LOG DETALLADO de archivos recibidos
+            Log::info('=== SOLICITUD NUEVA ===');
+            Log::info('Todos los archivos en request:', ['files' => array_keys($request->allFiles())]);
+            Log::info('doc_solicitud:', ['present' => $request->hasFile('doc_solicitud'), 'file' => $request->hasFile('doc_solicitud') ? $request->file('doc_solicitud')->getClientOriginalName() : 'N/A']);
+            Log::info('doc_plano:', ['present' => $request->hasFile('doc_plano'), 'file' => $request->hasFile('doc_plano') ? $request->file('doc_plano')->getClientOriginalName() : 'N/A']);
+            Log::info('doc_dni_copia:', ['present' => $request->hasFile('doc_dni_copia'), 'file' => $request->hasFile('doc_dni_copia') ? $request->file('doc_dni_copia')->getClientOriginalName() : 'N/A']);
+            Log::info('doc_comprobante_pago:', ['present' => $request->hasFile('doc_comprobante_pago'), 'file' => $request->hasFile('doc_comprobante_pago') ? $request->file('doc_comprobante_pago')->getClientOriginalName() : 'N/A']);
+            Log::info('doc_otros:', ['present' => $request->hasFile('doc_otros'), 'file' => $request->hasFile('doc_otros') ? $request->file('doc_otros')->getClientOriginalName() : 'N/A']);
 
-        $rules = [
-            'tipo_certificado'   => 'required|in:anexo_14,anexo_13,evento_publico',
-            'nombres_solicitante'=> 'required|min:3',
-            'dni_ruc'            => 'required|numeric|digits_between:8,11',
-            'telefono_whatsapp'  => 'required|numeric|digits:9',
-        ];
+            Log::info('Datos recibidos:', [
+                'tipo_certificado' => $request->tipo_certificado,
+                'nombres' => $request->nombres_solicitante,
+                'dni' => $request->dni_ruc,
+                'nombre_comercial' => $request->nombre_comercial ?? 'N/A',
+                'direccion' => $request->direccion ?? 'N/A',
+            ]);
 
-        if ($request->tipo_certificado !== 'evento_publico') {
-            $rules['nombre_comercial'] = 'required';
-            $rules['direccion']        = 'required';
-            $rules['solicitado_por']   = 'nullable';
-        } else {
-            $rules['nombre_evento']      = 'required';
-            $rules['fecha_evento']       = 'required|date';
-            $rules['organizador_nombre'] = 'required';
-            $rules['organizador_dni']    = 'required';
-            $rules['dias_evento']        = 'required|integer|min:1|max:365';
-            $rules['doc_comprobante_yape']= 'required|file|mimes:pdf,jpg,jpeg,png|max:5120';
-        }
+            $rules = [
+                'tipo_certificado'   => 'required|in:anexo_14,anexo_13,evento_publico',
+                'nombres_solicitante'=> 'required|min:3',
+                'dni_ruc'            => 'required|numeric|digits_between:8,11',
+                'telefono_whatsapp'  => 'required|numeric|digits:9',
+            ];
 
-        $request->validate($rules);
+            if ($request->tipo_certificado !== 'evento_publico') {
+                $rules['nombre_comercial'] = 'required';
+                $rules['direccion']        = 'required';
+                $rules['solicitado_por']   = 'nullable';
+            } else {
+                $rules['nombre_evento']      = 'required';
+                $rules['fecha_evento']       = 'required|date';
+                $rules['organizador_nombre'] = 'required';
+                $rules['organizador_dni']    = 'required';
+                $rules['dias_evento']        = 'required|integer|min:1|max:365';
+                // El comprobante de pago se sube después desde el ticket, no es requerido aquí
+            }
+
+            Log::info('Validando con reglas:', ['rules' => json_encode($rules)]);
+            $request->validate($rules);
+            Log::info('✓ Validación pasada');
 
         $docSolicitud = null;
         $docPlano     = null;
@@ -95,18 +106,19 @@ class SolicitudController extends Controller
             'nombres_solicitante' => $request->nombres_solicitante,
             'dni_ruc'             => $request->dni_ruc,
             'telefono_whatsapp'   => $request->telefono_whatsapp,
-            'email'               => $request->email,
-            'nombre_comercial'    => $request->nombre_comercial,
-            'nombre_evento'       => $request->nombre_evento,
-            'direccion'           => $request->direccion,
+            'email'               => $request->email ?? '',
+            // Campos que pueden ser nulos según tipo_certificado -> usar valor por defecto para evitar errores SQL
+            'nombre_comercial'    => $request->nombre_comercial ?? '',
+            'nombre_evento'       => $request->nombre_evento ?? '',
+            'direccion'           => $request->direccion ?? '',
             'provincia'           => $request->provincia ?? 'HUAMANGA',
             'departamento'        => $request->departamento ?? 'AYACUCHO',
-            'actividad'           => $request->actividad,
-            'area_edificacion'    => $request->area_edificacion,
-            'fecha_evento'        => $request->fecha_evento,
+            'actividad'           => $request->actividad ?? '',
+            'area_edificacion'    => ($request->filled('area_edificacion') ? $request->area_edificacion : null),
+            'fecha_evento'        => $request->fecha_evento ?? null,
             'dias_evento'         => (int) ($request->dias_evento ?? 1),
-            'organizador_nombre'  => $request->organizador_nombre,
-            'organizador_dni'     => $request->organizador_dni,
+            'organizador_nombre'  => $request->organizador_nombre ?? '',
+            'organizador_dni'     => $request->organizador_dni ?? '',
             'doc_solicitud'       => $docSolicitud,
             'doc_plano'           => $docPlano,
             'doc_dni_copia'       => $docDniCopia,
@@ -117,7 +129,20 @@ class SolicitudController extends Controller
             'monto_pago'          => (float) ($request->monto_pago ?? 0),
         ]);
 
-        return redirect()->route('solicitudes.confirmacion', $solicitud->codigo_seguimiento);
+            // Log final confirmation: ID y código creado
+            Log::info('Solicitud creada:', ['id' => $solicitud->id, 'codigo' => $solicitud->codigo_seguimiento]);
+
+            return redirect()->route('solicitudes.confirmacion', $solicitud->codigo_seguimiento);
+
+        } catch (\Throwable $e) {
+            Log::error('ERROR en enviar():', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
     public function confirmacion($codigo)
@@ -568,6 +593,65 @@ class SolicitudController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Mostrar formulario para subir comprobante de pago
+     */
+    public function formularioComprobante($codigo)
+    {
+        try {
+            $solicitud = Solicitud::where('codigo_seguimiento', $codigo)->firstOrFail();
+            return view('solicitudes.subir-comprobante', compact('solicitud'));
+        } catch (\Exception $e) {
+            return redirect()->route('solicitudes.seguimiento')
+                ->with('error', '❌ Solicitud no encontrada');
+        }
+    }
+
+    /**
+     * Guardar comprobante de pago
+     */
+    public function guardarComprobante(Request $request, $codigo)
+    {
+        try {
+            $solicitud = Solicitud::where('codigo_seguimiento', $codigo)->firstOrFail();
+
+            // Validar que el archivo sea PDF o imagen
+            $validated = $request->validate([
+                'comprobante_pago' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10 MB max
+            ], [
+                'comprobante_pago.required' => 'El archivo de comprobante es obligatorio',
+                'comprobante_pago.mimes' => 'El archivo debe ser PDF, JPG o PNG',
+                'comprobante_pago.max' => 'El archivo no debe superar 10 MB',
+            ]);
+
+            // Guardar archivo
+            if ($request->hasFile('comprobante_pago')) {
+                $file = $request->file('comprobante_pago');
+                $extension = $file->getClientOriginalExtension();
+                $filename = 'comprobante_' . $solicitud->id . '_' . time() . '.' . $extension;
+                $path = $file->storeAs('solicitudes/' . $solicitud->id, $filename, 'public');
+
+                // Actualizar solicitud
+                $solicitud->update([
+                    'doc_comprobante_pago' => $path,
+                    'estado_pago' => 'pago_validado', // Marcar como pagado (se verificará manualmente después)
+                ]);
+
+                return redirect()->route('solicitudes.seguimiento', ['codigo' => $codigo])
+                    ->with('success', '✅ Comprobante de pago subido exitosamente. El equipo verificará tu pago.');
+            }
+
+            return back()->with('error', '❌ Error al procesar el archivo');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('solicitudes.seguimiento')
+                ->with('error', '❌ Solicitud no encontrada');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error en guardarComprobante: " . $e->getMessage());
+            return back()->with('error', '❌ Error al guardar comprobante: ' . $e->getMessage());
         }
     }
 }

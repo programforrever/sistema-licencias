@@ -405,102 +405,6 @@
             -moz-appearance: textfield;
         }
 
-        /* TICKET DE PAGO */
-        .ticket-pago {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 2px dashed var(--green-main);
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .ticket-header {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--green-main);
-            margin-bottom: 15px;
-        }
-
-        .qr-container {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            max-width: 200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .qr-placeholder {
-            width: 150px;
-            height: 150px;
-            background: var(--bg);
-            border: 2px dashed var(--border);
-            border-radius: 6px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 40px;
-        }
-
-        .yape-info {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: left;
-        }
-
-        .yape-info h6 {
-            color: #d97706;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .yape-info p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #92400e;
-        }
-
-        .yape-info .yape-numero {
-            font-size: 18px;
-            font-weight: 700;
-            color: #b45309;
-            margin: 10px 0;
-        }
-
-        .instrucciones-pago {
-            background: #eff6ff;
-            border-left: 4px solid var(--brand);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: left;
-        }
-
-        .instrucciones-pago h6 {
-            color: var(--brand);
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .instrucciones-pago ol {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .instrucciones-pago li {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #1e40af;
-        }
-
         /* DRAG & DROP ZONES */
         .drag-drop-zone {
             border: 2px dashed #0055cc;
@@ -614,11 +518,18 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <form action="{{ route('solicitudes.enviar') }}" method="POST" enctype="multipart/form-data" id="formSolicitud">
+            <form action="{{ route('solicitudes.enviar') }}" method="POST" enctype="multipart/form-data" id="formSolicitud" onsubmit="copiarDatosAntesDePHP()">
                 @csrf
                 <input type="hidden" name="tipo_certificado" id="tipo_certificado_hidden">
                 <input type="hidden" name="monto_pago" id="monto_pago_hidden" value="0">
                 <input type="hidden" name="dias_evento" id="dias_evento_hidden" value="1">
+                <!-- Hidden fields para copiar datos de paso 3 que está en divs display:none -->
+                <input type="hidden" name="nombre_comercial" id="nombre_comercial_global">
+                <input type="hidden" name="direccion" id="direccion_global">
+                <input type="hidden" name="provincia" id="provincia_global">
+                <input type="hidden" name="departamento" id="departamento_global">
+                <input type="hidden" name="area_edificacion" id="area_edificacion_global">
+                <input type="hidden" name="actividad" id="actividad_global">
 
                 {{-- PASO 1 --}}
                 <div class="paso activo" id="paso1">
@@ -658,42 +569,42 @@
                         <p class="fw-bold text-success mb-2"><i class="fas fa-circle me-1" style="font-size:10px;"></i> Riesgo Bajo / Medio</p>
                         <div class="row g-2 mb-3">
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Bodega / Tienda de abarrotes', 'anexo_13', 'bajo')">
+                                <div class="area-card" onclick="elegirNegocio('Bodega / Tienda de abarrotes', 'anexo_13', 'bajo', 'bodega')">
                                     <i class="fas fa-shopping-basket d-block"></i>
                                     <h6>Bodega</h6>
                                     <small>Tienda de abarrotes</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Farmacia / Botica', 'anexo_13', 'medio')">
+                                <div class="area-card" onclick="elegirNegocio('Farmacia / Botica', 'anexo_13', 'medio', 'farmacia')">
                                     <i class="fas fa-pills d-block"></i>
                                     <h6>Farmacia / Botica</h6>
                                     <small>Consultorio, óptica</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Restaurante / Cevichería', 'anexo_13', 'medio')">
+                                <div class="area-card" onclick="elegirNegocio('Restaurante / Cevichería', 'anexo_13', 'medio', 'restaurante_menu')">
                                     <i class="fas fa-utensils d-block"></i>
                                     <h6>Restaurante</h6>
                                     <small>Cevichería, picantería</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Oficina / Consultorio', 'anexo_13', 'medio')">
+                                <div class="area-card" onclick="elegirNegocio('Oficina / Consultorio', 'anexo_13', 'medio', 'oficina_admin')">
                                     <i class="fas fa-briefcase d-block"></i>
                                     <h6>Oficina</h6>
                                     <small>Consultorio, estudio</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Peluquería / Salón de belleza', 'anexo_13', 'bajo')">
+                                <div class="area-card" onclick="elegirNegocio('Peluquería / Salón de belleza', 'anexo_13', 'bajo', 'peluqueria')">
                                     <i class="fas fa-cut d-block"></i>
                                     <h6>Peluquería</h6>
                                     <small>Salón de belleza</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Institución educativa', 'anexo_13', 'medio')">
+                                <div class="area-card" onclick="elegirNegocio('Institución educativa', 'anexo_13', 'medio', 'educativo')">
                                     <i class="fas fa-school d-block"></i>
                                     <h6>Colegio / Academia</h6>
                                     <small>Institución educativa</small>
@@ -704,42 +615,42 @@
                         <p class="fw-bold text-danger mb-2"><i class="fas fa-circle me-1" style="font-size:10px;"></i> Riesgo Alto / Muy Alto</p>
                         <div class="row g-2 mb-3">
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Grifo / Estación de combustible', 'anexo_14', 'alto')">
+                                <div class="area-card" onclick="elegirNegocio('Grifo / Estación de combustible', 'anexo_14', 'alto', 'grifo')">
                                     <i class="fas fa-gas-pump d-block"></i>
                                     <h6>Grifo</h6>
                                     <small>Estación de combustible</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Almacén / Depósito', 'anexo_14', 'alto')">
+                                <div class="area-card" onclick="elegirNegocio('Almacén / Depósito', 'anexo_14', 'alto', 'almacen')">
                                     <i class="fas fa-warehouse d-block"></i>
                                     <h6>Almacén</h6>
                                     <small>Depósito, ferretería</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Hospital / Clínica', 'anexo_14', 'muyalto')">
+                                <div class="area-card" onclick="elegirNegocio('Hospital / Clínica', 'anexo_14', 'muyalto', 'hospital')">
                                     <i class="fas fa-hospital d-block"></i>
                                     <h6>Hospital / Clínica</h6>
                                     <small>Centro de salud</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Centro comercial / Galería', 'anexo_14', 'muyalto')">
+                                <div class="area-card" onclick="elegirNegocio('Centro comercial / Galería', 'anexo_14', 'muyalto', 'centro_comercial')">
                                     <i class="fas fa-building d-block"></i>
                                     <h6>Centro comercial</h6>
                                     <small>Galería, mercado</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Discoteca / Bar / Karaoke', 'anexo_14', 'muyalto')">
+                                <div class="area-card" onclick="elegirNegocio('Discoteca / Bar / Karaoke', 'anexo_14', 'muyalto', 'discoteca')">
                                     <i class="fas fa-music d-block"></i>
                                     <h6>Discoteca / Bar</h6>
                                     <small>Karaoke, recreo</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-4">
-                                <div class="area-card" onclick="elegirNegocio('Hotel / Hospedaje', 'anexo_14', 'alto')">
+                                <div class="area-card" onclick="elegirNegocio('Hotel / Hospedaje', 'anexo_14', 'alto', 'hotel')">
                                     <i class="fas fa-hotel d-block"></i>
                                     <h6>Hotel / Hospedaje</h6>
                                     <small>Hostal, alojamiento</small>
@@ -747,9 +658,30 @@
                             </div>
                         </div>
 
+                        {{-- AVISO DE PAGO PRESENCIAL --}}
+                        <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; color: #7f1d1d; border-radius: 10px; padding: 1.5rem; font-size: 0.9rem; margin: 1.5rem 0; line-height: 1.6;">
+                            <div style="font-size: 1.2rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div><strong>⚠️ IMPORTANTE - PAGO PRESENCIAL</strong></div>
+                            <p style="margin: 0.75rem 0 0.5rem 0;">
+                                El pago del trámite se realiza <strong>presencialmente en nuestras instalaciones</strong>.
+                            </p>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                <li>Completa tu solicitud online aquí</li>
+                                <li>Recibirás un código de seguimiento y ticket de pago</li>
+                                <li>Acude a la Municipalidad presencialmente</li>
+                                <li>Presenta el ticket y realiza el pago</li>
+                                <li>Sube el comprobante de pago en el link del ticket</li>
+                            </ul>
+                        </div>
+
                         <div class="text-start mt-2">
                             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="irPaso(1)">
                                 <i class="fas fa-arrow-left me-1"></i>Volver
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm float-end" onclick="irPaso(3)">
+                                Continuar <i class="fas fa-arrow-right ms-1"></i>
                             </button>
                         </div>
                     </div>
@@ -805,74 +737,31 @@
                             <div class="precio-tipo" id="precio-evento-tipo">Evento Público - 1 día</div>
                             <div class="precio-nota">* Válido por el período seleccionado</div>
                         </div>
+
+                        {{-- AVISO DE PAGO PRESENCIAL --}}
+                        <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; color: #7f1d1d; border-radius: 10px; padding: 1.5rem; font-size: 0.9rem; margin: 1.5rem 0; line-height: 1.6;">
+                            <div style="font-size: 1.2rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div><strong>⚠️ IMPORTANTE - PAGO PRESENCIAL</strong></div>
+                            <p style="margin: 0.75rem 0 0.5rem 0;">
+                                El pago del trámite se realiza <strong>presencialmente en nuestras instalaciones</strong>.
+                            </p>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                <li>Completa tu solicitud online aquí</li>
+                                <li>Recibirás un código de seguimiento y ticket de pago</li>
+                                <li>Acude a la Municipalidad presencialmente</li>
+                                <li>Presenta el ticket y realiza el pago</li>
+                                <li>Sube el comprobante de pago en el link del ticket</li>
+                            </ul>
+                        </div>
                         
                         <div class="d-flex justify-content-center gap-2 mt-3">
                             <button type="button" class="btn btn-outline-secondary" onclick="irPaso(1)">
                                 <i class="fas fa-arrow-left me-1"></i>Volver
                             </button>
-                            <button type="button" class="btn btn-success" onclick="irPaso(2.5)">
-                                Continuar <i class="fas fa-arrow-right ms-1"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- PASO 2C: Ticket de Pago --}}
-                <div class="paso" id="paso2pago">
-                    <div class="card form-card p-4">
-                        <h5 class="fw-bold text-center mb-3">
-                            <i class="fas fa-receipt text-success me-2"></i>
-                            Información de Pago
-                        </h5>
-                        <p class="text-center text-muted mb-4">Realiza tu pago mediante Yape y adjunta el comprobante en el último paso</p>
-                        
-                        <div class="ticket-pago">
-                            <div class="ticket-header">🧾 TICKET DE PAGO</div>
-                            <div class="precio-label">Monto a pagar</div>
-                            <div class="precio-monto" style="margin-bottom: 10px;" id="monto-pago-ticket">S/ 178.90</div>
-                            
-                            {{-- QR YAPE --}}
-                            <div style="margin: 20px 0;">
-                                <p class="fw-bold text-success mb-2">📱 CÓDIGO QR YAPE</p>
-                                <div class="qr-container">
-                                    <img src="{{ asset('qr.jpeg') }}" alt="QR Yape" style="width: 100%; max-width: 150px; height: auto; border-radius: 6px; object-fit: contain;">
-                                </div>
-                                <small class="text-muted d-block mt-2">QR de registro: Escanea para pagar mediante Yape</small>
-                            </div>
-                            
-                            {{-- INFORMACIÓN YAPE --}}
-                            <div class="yape-info">
-                                <h6><i class="fas fa-mobile-alt me-2"></i>Pagar Directamente por Yape</h6>
-                                <p><strong>Número Yape de la Municipalidad:</strong></p>
-                                <div class="yape-numero">+51 974 123 456</div>\n                                <p><strong>A nombre de:</strong> Municipalidad Distrital de Andrés Avelino Cáceres Dorregaray</p>
-                                <p><strong>Concepto:</strong> Certificado ITSE Evento Público</p>
-                            </div>
-                            
-                            {{-- INSTRUCCIONES --}}
-                            <div class="instrucciones-pago">
-                                <h6><i class="fas fa-check-circle me-2"></i>Pasos para pagar:</h6>
-                                <ol>
-                                    <li>Abre tu aplicación Yape</li>
-                                    <li>Escanea el código QR o copia el número de teléfono</li>
-                                    <li>Ingresa el monto: <strong id="monto-instruccion">S/ 178.90</strong></li>
-                                    <li>Completa la transacción</li>
-                                    <li>Guarda el comprobante o pantallacita del pago</li>
-                                    <li>En el último paso adjunta el comprobante</li>
-                                </ol>
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-warning mt-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Importante:</strong> Debes adjuntar el comprobante del pago Yape en el último paso para que tu solicitud sea procesada.
-                        </div>
-                        
-                        <div class="d-flex justify-content-center gap-2 mt-4">
-                            <button type="button" class="btn btn-outline-secondary" onclick="irPaso(2)">
-                                <i class="fas fa-arrow-left me-1"></i>Volver
-                            </button>
                             <button type="button" class="btn btn-success" onclick="irPaso(3)">
-                                <i class="fas fa-check me-1"></i>Entendido, Continuar <i class="fas fa-arrow-right ms-1"></i>
+                                Continuar <i class="fas fa-arrow-right ms-1"></i>
                             </button>
                         </div>
                     </div>
@@ -943,7 +832,7 @@
                                     value="{{ old('telefono_whatsapp') }}"
                                     maxlength="9" inputmode="numeric"
                                     oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                                    placeholder="9 dígitos">
+                                    placeholder="9 dígitos"
                                 <div class="label-error" id="err_telefono">Ingresa tu número de WhatsApp</div>
                                 @error('telefono_whatsapp')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
@@ -959,30 +848,30 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Nombre Comercial <span class="text-danger">*</span></label>
-                                    <input type="text" name="nombre_comercial" id="nombre_comercial_neg"
+                                    <input type="text" id="nombre_comercial_neg"
                                         class="form-control" value="{{ old('nombre_comercial') }}">
                                     <div class="label-error" id="err_nombre_comercial">Ingresa el nombre comercial</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Dirección <span class="text-danger">*</span></label>
-                                    <input type="text" name="direccion" id="direccion_neg"
+                                    <input type="text" id="direccion_neg"
                                         class="form-control" value="{{ old('direccion') }}">
                                     <div class="label-error" id="err_direccion_neg">Ingresa la dirección del local</div>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">Provincia <span class="text-danger">*</span></label>
-                                    <input type="text" name="provincia" id="provincia_neg" class="form-control" value="{{ old('provincia', 'HUAMANGA') }}">
+                                    <input type="text" id="provincia_neg" class="form-control" value="{{ old('provincia', 'HUAMANGA') }}">
                                     <div class="label-error" id="err_provincia">Ingresa la provincia</div>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">Departamento <span class="text-danger">*</span></label>
-                                    <input type="text" name="departamento" id="departamento_neg" class="form-control" value="{{ old('departamento', 'AYACUCHO') }}">
+                                    <input type="text" id="departamento_neg" class="form-control" value="{{ old('departamento', 'AYACUCHO') }}">
                                     <div class="label-error" id="err_departamento">Ingresa el departamento</div>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">Área (m2) <span class="text-danger">*</span></label>
                                     <input type="number" step="0.01" min="1" max="99999.99"
-                                        name="area_edificacion" id="area_neg"
+                                        id="area_neg"
                                         class="form-control" value="{{ old('area_edificacion') }}"
                                         placeholder="Ej: 250.50"
                                         oninput="calcularPrecio()">
@@ -990,7 +879,7 @@
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label fw-bold">Giro o Actividad <span class="text-danger">*</span></label>
-                                    <input type="text" name="actividad" id="actividad_neg"
+                                    <input type="text" id="actividad_neg"
                                         class="form-control" value="{{ old('actividad') }}"
                                         placeholder="Se completó automáticamente según tu selección">
                                     <div class="label-error" id="err_actividad">Ingresa el giro o actividad del local</div>
@@ -1022,13 +911,13 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Nombre del Lugar <span class="text-danger">*</span></label>
-                                    <input type="text" name="nombre_comercial" id="nombre_comercial_ev"
+                                    <input type="text" id="nombre_comercial_ev"
                                         class="form-control" value="{{ old('nombre_comercial') }}">
                                     <div class="label-error" id="err_nombre_lugar">Ingresa el nombre del lugar</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Dirección del Lugar <span class="text-danger">*</span></label>
-                                    <input type="text" name="direccion" id="direccion_ev"
+                                    <input type="text" id="direccion_ev"
                                         class="form-control" value="{{ old('direccion') }}">
                                     <div class="label-error" id="err_direccion_ev">Ingresa la dirección del lugar</div>
                                 </div>
@@ -1086,53 +975,52 @@
                         <div class="row">
                             <!-- Solicitud / FUT -->
                             <div class="col-lg-6 mb-4">
-                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-file me-2"></i>1. Solicitud / FUT <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-file me-2"></i>1. Solicitud / FUT <span class="text-danger" id="label-req-solicitud">*</span></label>
                                 <div class="drag-drop-zone" id="drop-solicitud" data-field="doc_solicitud">
                                     <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
                                     <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
                                     <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
                                     <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
                                 </div>
-                                <input type="file" name="doc_solicitud" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <input type="file" name="doc_solicitud" class="d-none file-input" accept=".pdf,.jpg,.png" id="doc_solicitud_input">
                                 <div class="file-preview mt-2" id="preview-doc_solicitud"></div>
                             </div>
 
                             <!-- Plano / Croquis -->
                             <div class="col-lg-6 mb-4">
-                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-image me-2"></i>2. Plano / Croquis <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-image me-2"></i>2. Plano / Croquis <span class="text-danger" id="label-req-plano">*</span></label>
                                 <div class="drag-drop-zone" id="drop-plano" data-field="doc_plano">
                                     <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
                                     <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
                                     <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
                                     <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
                                 </div>
-                                <input type="file" name="doc_plano" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <input type="file" name="doc_plano" class="d-none file-input" accept=".pdf,.jpg,.png" id="doc_plano_input">
                                 <div class="file-preview mt-2" id="preview-doc_plano"></div>
                             </div>
 
                             <!-- DNI / Pasaporte -->
                             <div class="col-lg-6 mb-4">
-                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-id-card me-2"></i>3. Copia de DNI / Pasaporte <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-id-card me-2"></i>3. Copia de DNI / Pasaporte <span class="text-danger" id="label-req-dni">*</span></label>
                                 <div class="drag-drop-zone" id="drop-dni" data-field="doc_dni_copia">
                                     <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
                                     <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
                                     <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
                                     <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
                                 </div>
-                                <input type="file" name="doc_dni_copia" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <input type="file" name="doc_dni_copia" class="d-none file-input" accept=".pdf,.jpg,.png" id="doc_dni_copia_input">
                                 <div class="file-preview mt-2" id="preview-doc_dni_copia"></div>
                             </div>
 
                             <!-- Comprobante de Pago -->
                             <div class="col-lg-6 mb-4">
-                                <label class="form-label fw-bold" style="color: #0055cc; font-size: 1rem;"><i class="fas fa-receipt me-2"></i>4. Comprobante de Pago <span class="text-danger">*</span></label>
-                                <div class="drag-drop-zone" id="drop-pago" data-field="doc_comprobante_pago">
-                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #0055cc; margin-bottom: 0.5rem;"></i>
-                                    <p class="fw-bold mb-1">Arrastra tu archivo aquí</p>
-                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">o haz clic para seleccionar</p>
-                                    <small class="text-muted">PDF, JPG o PNG (máx 5 MB)</small>
+                                <label class="form-label fw-bold" style="color: #999; font-size: 1rem;"><i class="fas fa-receipt me-2"></i>4. Comprobante de Pago <span class="text-muted" style="font-size: 0.85rem; font-weight: normal;">(Se sube desde el link del ticket)</span></label>
+                                <div class="drag-drop-zone" id="drop-pago" data-field="doc_comprobante_pago" style="opacity: 0.6; pointer-events: none; background-color: #f5f5f5; border-color: #ccc;">
+                                    <i class="fas fa-lock" style="font-size: 2.5rem; color: #999; margin-bottom: 0.5rem;"></i>
+                                    <p class="fw-bold mb-1" style="color: #999;">Este campo está deshabilitado</p>
+                                    <p class="text-muted mb-3" style="font-size: 0.9rem;">Carga tu comprobante desde el link "Subir Comprobante" en tu ticket</p>
                                 </div>
-                                <input type="file" name="doc_comprobante_pago" class="d-none file-input" accept=".pdf,.jpg,.png" required>
+                                <input type="file" name="doc_comprobante_pago" class="d-none file-input" accept=".pdf,.jpg,.png" disabled>
                                 <div class="file-preview mt-2" id="preview-doc_comprobante_pago"></div>
                             </div>
                         </div>
@@ -1158,7 +1046,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" onclick="irPaso(3)">
+                            <button type="button" class="btn btn-outline-secondary" onclick="volverDesdePaso4()">
                                 <i class="fas fa-arrow-left me-1"></i>Volver
                             </button>
                             <button type="submit" class="btn btn-success btn-lg px-5">
@@ -1182,11 +1070,30 @@
 let tipoCertificado = '';
 let tipoFlujo      = '';
 let nivelRiesgo    = ''; // 'bajo', 'medio', 'alto', 'muyalto'
+let nichoSeleccionado = ''; // ID del nicho/tipo de negocio seleccionado
 
 // ============================================================
 // TABLA DE PRECIOS — modifica aquí cuando cambien los precios
 // ============================================================
 const PRECIOS = {
+    // Precios por tipo de negocio (nicho)
+    nichos: {
+        bodega:               99.80,     // Bodega / Tienda de abarrotes
+        farmacia:            133.80,     // Farmacia / Botica
+        restaurante_menu:    133.80,     // Restaurante / Cevichería (menú del día)
+        restaurante_turistico: 333.80,   // Restaurante turístico / Recreo
+        oficina_admin:       133.80,     // Oficina / Consultorio (< 500m²)
+        oficina_admin_grande: 333.80,    // Oficina / Consultorio (> 500m²)
+        peluqueria:          133.80,     // Peluquería / Salón de belleza
+        educativo:           333.80,     // Institución educativa / Centros educativos
+        grifo:               546.40,     // Grifo / Estación de combustible
+        almacen:             546.40,     // Almacén / Depósito
+        hospital:            546.40,     // Hospital / Clínica
+        centro_comercial:    546.40,     // Centro comercial / Galería
+        discoteca:           546.40,     // Discoteca / Bar / Karaoke
+        hotel:               546.40,     // Hotel / Hospedaje
+    },
+    // Precios por anexo (si no hay nicho específico, usa el cálculo de área)
     anexo_13: {
         bajo:  { menorA100: 99.80,  mayorA100: 99.80  },  // bodegas: precio fijo
         medio: { menorA100: 99.80,  mayorA100: 133.80 },  // resto anexo 13
@@ -1232,19 +1139,47 @@ function elegirTipo(tipo) {
         document.getElementById('monto_pago_hidden').value = PRECIOS.evento_publico;
         document.getElementById('paso2evento').classList.add('activo');
         actualizarDots(2);
+        actualizarCamposRequeridos(); // Actualizar validación de documentos
     } else {
         document.getElementById('paso2negocio').classList.add('activo');
         actualizarDots(2);
     }
 }
 
-function elegirNegocio(nombreNegocio, anexo, riesgo) {
+function elegirNegocio(nombreNegocio, anexo, riesgo, nicho = '') {
     tipoCertificado = anexo;
     nivelRiesgo     = riesgo;
+    nichoSeleccionado = nicho; // Guardar el ID del nicho
     document.getElementById('tipo_certificado_hidden').value = anexo;
     // Pre-llenar el campo actividad con el tipo elegido
     document.getElementById('actividad_neg').value = nombreNegocio;
+    
+    // Establece el monto según el anexo seleccionado
+    const monto = tipoCertificado === 'anexo_14' ? PRECIOS.anexo_14 : PRECIOS.anexo_13;
+    document.getElementById('monto_pago_hidden').value = monto;
+    
+    actualizarCamposRequeridos(); // Actualizar validación de documentos
+    // Ir automáticamente a paso 3 (datos del negocio)
     irPaso(3);
+}
+
+function actualizarCamposRequeridos() {
+    const esEvento = tipoCertificado === 'evento_publico';
+    const inputs = ['doc_solicitud_input', 'doc_plano_input', 'doc_dni_copia_input'];
+    const labels = ['label-req-solicitud', 'label-req-plano', 'label-req-dni'];
+    
+    inputs.forEach((inputId, index) => {
+        const input = document.getElementById(inputId);
+        const label = document.getElementById(labels[index]);
+        
+        if (esEvento) {
+            input.removeAttribute('required'); // No requerido para evento
+            label.style.display = 'none'; // Ocultar asterisco
+        } else {
+            input.setAttribute('required', 'required'); // Requerido para negocio
+            label.style.display = 'inline'; // Mostrar asterisco
+        }
+    });
 }
 
 function seleccionarDias(dias) {
@@ -1262,10 +1197,6 @@ function seleccionarDias(dias) {
     document.getElementById('precio-evento-monto').textContent = 'S/ ' + precioTotal.toFixed(2);
     const diaLabel = dias === 1 ? 'día' : 'días';
     document.getElementById('precio-evento-tipo').textContent = 'Evento Público - ' + dias + ' ' + diaLabel;
-    
-    // Actualizar en paso 2C (ticket de pago)
-    document.getElementById('monto-pago-ticket').textContent = 'S/ ' + precioTotal.toFixed(2);
-    document.getElementById('monto-instruccion').textContent = 'S/ ' + precioTotal.toFixed(2);
     
     // Guardar en campo hidden de monto
     document.getElementById('monto_pago_hidden').value = precioTotal;
@@ -1300,10 +1231,6 @@ function seleccionarDiasPersonalizado() {
     const diaLabel = dias === 1 ? 'día' : 'días';
     document.getElementById('precio-evento-tipo').textContent = 'Evento Público - ' + dias + ' ' + diaLabel;
     
-    // Actualizar en paso 2C (ticket de pago)
-    document.getElementById('monto-pago-ticket').textContent = 'S/ ' + precioTotal.toFixed(2);
-    document.getElementById('monto-instruccion').textContent = 'S/ ' + precioTotal.toFixed(2);
-    
     // Guardar en campo hidden de monto
     document.getElementById('monto_pago_hidden').value = precioTotal;
     
@@ -1320,6 +1247,18 @@ function calcularPrecio() {
     if (tipoCertificado === 'evento_publico') {
         const precioEvento = PRECIOS.evento_publico;
         document.getElementById('monto_pago_hidden').value = precioEvento;
+        return;
+    }
+    
+    // Si hay un nicho seleccionado con precio fijo, usarlo
+    if (nichoSeleccionado && PRECIOS.nichos[nichoSeleccionado]) {
+        const precioNicho = PRECIOS.nichos[nichoSeleccionado];
+        document.getElementById('monto_pago_hidden').value = precioNicho;
+        
+        // Mostrar en pantalla
+        document.getElementById('precio-monto').textContent = 'S/ ' + precioNicho.toFixed(2);
+        document.getElementById('precio-tipo').textContent = 'Precio fijo por tipo de negocio';
+        document.getElementById('precio-box').style.display = 'block';
         return;
     }
     
@@ -1342,39 +1281,33 @@ function calcularPrecio() {
 
 function irPaso(n) {
     ocultarTodos();
-    if (n == 2) {
+    if (n == 1) {
+        document.getElementById('paso1').classList.add('activo');
+        actualizarDots(1);
+    } else if (n == 2) {
         // Paso 2: Para evento, muestra selector de días; para negocio no existe
         if (tipoFlujo === 'evento') {
             document.getElementById('paso2evento').classList.add('activo');
             actualizarDots(2);
         }
-    } else if (n == 2.5 || n === 2.5) {
-        // Paso 2C: Ticket de pago (solo para eventos)
-        document.getElementById('paso2pago').classList.add('activo');
-        actualizarDots(3); // Mostrar dot 3 como activo para que vea que avanzó
     } else if (n == 3) {
         // Paso 3: Datos del solicitante
         document.getElementById('paso3').classList.add('activo');
         actualizarDots(3);
+        
+        // Actualizar descripción del tipo seleccionado
+        const textoTipo = document.getElementById('texto-tipo');
         if (tipoCertificado === 'evento_publico') {
+            textoTipo.innerHTML = '📅 <strong>Evento Público</strong> — Certificado de Inspección Técnica Previa a Evento';
             document.getElementById('datos-negocio').style.display = 'none';
             document.getElementById('datos-evento').style.display  = 'block';
-            document.getElementById('texto-tipo').innerHTML = '📅 <strong>Evento Público</strong> — Certificado de Inspección Técnica Previa a Evento';
-            document.getElementById('nombre_comercial_neg').disabled = true;
-            document.getElementById('direccion_neg').disabled        = true;
-            document.getElementById('nombre_comercial_ev').disabled  = false;
-            document.getElementById('direccion_ev').disabled         = false;
         } else {
-            document.getElementById('datos-negocio').style.display = 'block';
-            document.getElementById('datos-evento').style.display  = 'none';
             const label = tipoCertificado === 'anexo_13'
                 ? '🏪 <strong>Riesgo Bajo/Medio (Anexo 13)</strong> — Local menor a 500 m²'
                 : '🏢 <strong>Riesgo Alto/Muy Alto (Anexo 14)</strong> — Local mayor a 500 m²';
-            document.getElementById('texto-tipo').innerHTML = label;
-            document.getElementById('nombre_comercial_neg').disabled = false;
-            document.getElementById('direccion_neg').disabled        = false;
-            document.getElementById('nombre_comercial_ev').disabled  = true;
-            document.getElementById('direccion_ev').disabled         = true;
+            textoTipo.innerHTML = label;
+            document.getElementById('datos-negocio').style.display = 'block';
+            document.getElementById('datos-evento').style.display  = 'none';
             // Recalcular precio si ya hay área
             calcularPrecio();
         }
@@ -1383,27 +1316,27 @@ function irPaso(n) {
         // Paso 4: Documentos adjuntos
         document.getElementById('paso4').classList.add('activo');
         actualizarDots(4);
-    } else if (n == 5) {
-        // Paso 5: Confirmación final
-        document.getElementById('paso5').classList.add('activo');
-        actualizarDots(5);
-    } else if (n == 1) {
-        document.getElementById('paso1').classList.add('activo');
-        actualizarDots(1);
     }
 }
 
 function volverPaso2() {
     ocultarTodos();
     if (tipoFlujo === 'evento') {
-        // Para evento, volver a paso2pago (ticket de pago)
-        document.getElementById('paso2pago').classList.add('activo');
-        actualizarDots(3); // Mostrar dot 3 como activo para pasos 2C
+        // Para evento, volver a paso2evento (selector de días)
+        document.getElementById('paso2evento').classList.add('activo');
+        actualizarDots(2);
     } else {
         // Para negocio, volver a paso2negocio
         document.getElementById('paso2negocio').classList.add('activo');
         actualizarDots(2);
     }
+}
+
+function volverDesdePaso4() {
+    // Desde paso 4 (documentos), volver a paso 3 (datos)
+    ocultarTodos();
+    document.getElementById('paso3').classList.add('activo');
+    actualizarDots(3);
 }
 
 // ===== VALIDACIÓN =====
@@ -1479,6 +1412,7 @@ function validarYContinuar() {
         return;
     }
 
+    // Ir directamente a paso 4 (documentos adjuntos) - pago presencial no necesita pasos intermedios
     irPaso(4);
 }
 
@@ -1649,6 +1583,84 @@ function abrirPlantillaITCE() {
 
     // Abrir en nueva pestaña
     window.open(url, '_blank');
+}
+
+// ===== COPIA DE DATOS ANTES DE ENVIAR =====
+/**
+ * Esta función se ejecuta when onsubmit del formulario
+ * Copia valores desde los inputs visibles a los inputs ocultos globales
+ * para que se envíen correctamente al servidor
+ */
+function copiarDatosAntesDePHP() {
+    console.log('copiarDatosAntesDePHP() iniciado. tipoCertificado:', tipoCertificado);
+    
+    // ===== VALIDAR ARCHIVOS REQUERIDOS =====
+    const doc_solicitud = document.getElementById('doc_solicitud_input');
+    const doc_plano = document.getElementById('doc_plano_input');
+    const doc_dni_copia = document.getElementById('doc_dni_copia_input');
+    
+    const archivosRequeridos = [];
+    if (!doc_solicitud.files || doc_solicitud.files.length === 0) {
+        archivosRequeridos.push('❌ Solicitud / FUT');
+    }
+    if (!doc_plano.files || doc_plano.files.length === 0) {
+        archivosRequeridos.push('❌ Plano / Croquis');
+    }
+    if (!doc_dni_copia.files || doc_dni_copia.files.length === 0) {
+        archivosRequeridos.push('❌ Copia de DNI / Pasaporte');
+    }
+    
+    if (archivosRequeridos.length > 0) {
+        alert('⚠️ DOCUMENTOS FALTANTES\n\nPor favor adjunta los siguientes documentos para continuar:\n\n' + archivosRequeridos.join('\n'));
+        return false; // Prevenir envío del formulario
+    }
+    
+    // ===== COPIAR TIPO DE CERTIFICADO =====
+    document.getElementById('tipo_certificado_hidden').value = tipoCertificado;
+    console.log('tipo_certificado_hidden set to:', tipoCertificado);
+    
+    // ===== COPIAR DATOS SEGÚN TIPO DE CERTIFICADO =====
+    if (tipoCertificado !== 'evento_publico') {
+        // Para negocio: copiar datos desde inputs visibles a hidden inputs globales
+        const nombreComercialValue = document.getElementById('nombre_comercial_neg').value;
+        const direccionValue = document.getElementById('direccion_neg').value;
+        const provinciaValue = document.getElementById('provincia_neg').value;
+        const departamentoValue = document.getElementById('departamento_neg').value;
+        const areaValue = document.getElementById('area_neg').value;
+        const actividadValue = document.getElementById('actividad_neg').value;
+        
+        document.getElementById('nombre_comercial_global').value = nombreComercialValue;
+        document.getElementById('direccion_global').value = direccionValue;
+        document.getElementById('provincia_global').value = provinciaValue;
+        document.getElementById('departamento_global').value = departamentoValue;
+        document.getElementById('area_edificacion_global').value = areaValue;
+        document.getElementById('actividad_global').value = actividadValue;
+        
+        console.log('Negocio - Datos copiados:', {
+            nombre_comercial: nombreComercialValue,
+            direccion: direccionValue,
+            provincia: provinciaValue,
+            departamento: departamentoValue,
+            area: areaValue,
+            actividad: actividadValue
+        });
+    } else {
+        // Para evento: copiar nombre_comercial desde evento field
+        const nombreLugarValue = document.getElementById('nombre_comercial_ev').value;
+        const direccionEvValue = document.getElementById('direccion_ev').value;
+        
+        document.getElementById('nombre_comercial_global').value = nombreLugarValue;
+        document.getElementById('direccion_global').value = direccionEvValue;
+        
+        console.log('Evento - Datos copiados:', {
+            nombre_lugar: nombreLugarValue,
+            direccion: direccionEvValue
+        });
+    }
+    
+    console.log('Formulario listo para enviar');
+    // El formulario continúa con su envío normal
+    return true;
 }
 
 // ===== DRAG & DROP FILE UPLOAD =====

@@ -231,26 +231,19 @@
     </tr>
 </table>
 
-{{-- FIRMAS Y QR --}}
+{{-- FIRMA Y QR --}}
 <table class="firmas-table" style="margin-top:25px;">
     <tr>
-        <td style="width:38%; text-align:center;">
+        <td style="width:50%; text-align:center;">
             <br><br><br>
             <div class="firma-linea">
                 Ing. RESPONSABLE TÉCNICO<br>
                 Secretario Técnico de Defensa Civil y G.R.D.
             </div>
         </td>
-        <td style="width:24%; text-align:center; vertical-align:middle;">
+        <td style="width:50%; text-align:center; vertical-align:middle;">
             <img src="data:{{ $mimeType }};base64,{{ $qr }}" width="100" height="100">
             <span style="font-size:8px;">Escanea para verificar</span>
-        </td>
-        <td style="width:38%; text-align:center;">
-            <br><br><br>
-            <div class="firma-linea">
-                FIRMA Y SELLO<br>
-                Responsable del Órgano Ejecutante
-            </div>
         </td>
     </tr>
 </table>

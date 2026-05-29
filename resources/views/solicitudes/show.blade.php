@@ -49,13 +49,13 @@
                             @elseif($solicitud->estado == 'enviado_a_revision')
                                 <span class="badge bg-warning text-dark fs-6">ENVIADO A REVISIÓN</span>
                             @elseif($solicitud->estado == 'recibido')
-                                <span class="badge bg-primary fs-6">ENVIADA</span>
+                                <span class="badge bg-primary fs-6">RECIBIDO</span>
                             @elseif($solicitud->estado == 'en_revision')
                                 <span class="badge bg-warning text-dark fs-6">EN REVISIÓN</span>
                             @elseif($solicitud->estado == 'aprobado')
                                 <span class="badge bg-success fs-6">APROBADO</span>
                             @else
-                                <span class="badge bg-danger fs-6">RECHAZADO</span>
+                                <span class="badge bg-danger fs-6">{{ strtoupper($solicitud->estado) }}</span>
                             @endif
                         </td>
                     </tr>
@@ -264,13 +264,21 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nuevo estado</label>
                         <select name="estado" class="form-select" required>
-                            <option value="">-- Seleccionar --</option>
-                            @if($solicitud->estado == 'registrado' || $solicitud->estado == 'recibido')
-                                <option value="aceptado">Aceptar</option>
+                            <option value="">-- Seleccionar estado --</option>
+                            <!-- Aceptar: desde registrado o recibido -->
+                            @if(in_array($solicitud->estado, ['registrado', 'recibido']))
+                                <option value="aceptado">✅ Aceptar</option>
                             @endif
-                            @if($solicitud->estado == 'aceptado' || $solicitud->estado == 'en_revision' || $solicitud->estado == 'recibido')
-                                <option value="aprobado">Aprobar</option>
-                                <option value="rechazado">Rechazar</option>
+                            <!-- Enviar a revisión: desde aceptado -->
+                            @if($solicitud->estado == 'aceptado')
+                                <option value="enviado_a_revision">📋 Enviar a Revisión</option>
+                                <option value="aprobado">✅ Aprobar directamente</option>
+                                <option value="rechazado">❌ Rechazar</option>
+                            @endif
+                            <!-- Aprobar o Rechazar: desde enviado_a_revision o en_revision -->
+                            @if(in_array($solicitud->estado, ['enviado_a_revision', 'en_revision']))
+                                <option value="aprobado">✅ Aprobar</option>
+                                <option value="rechazado">❌ Rechazar</option>
                             @endif
                         </select>
                     </div>

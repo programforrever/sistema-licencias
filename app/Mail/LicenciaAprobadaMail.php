@@ -44,7 +44,19 @@ class LicenciaAprobadaMail extends Mailable
 
     public function attachments(): array
     {
-        // Intentar enviar el PDF firmado si existe
+        // Prioridad 1: PDF adjunto firmado (usuario adjuntó un PDF ya firmado)
+        if ($this->licencia->pdf_adjunto_firmado_path) {
+            $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $this->licencia->pdf_adjunto_firmado_path);
+            if (file_exists($pdfPath)) {
+                return [
+                    Attachment::fromPath($pdfPath)
+                        ->as('Certificado-' . $this->licencia->numero_licencia . '.pdf')
+                        ->withMime('application/pdf'),
+                ];
+            }
+        }
+        
+        // Prioridad 2: PDF firmado digitalmente
         if ($this->licencia->pdf_firmado_path) {
             $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $this->licencia->pdf_firmado_path);
             if (file_exists($pdfPath)) {
@@ -56,7 +68,7 @@ class LicenciaAprobadaMail extends Mailable
             }
         }
         
-        // Si no existe PDF firmado, intentar con pdf_path
+        // Prioridad 3: PDF original sin firmar
         if ($this->licencia->pdf_path) {
             $pdfPath = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $this->licencia->pdf_path);
             if (file_exists($pdfPath)) {

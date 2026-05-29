@@ -327,6 +327,33 @@
             color: white;
         }
 
+        /* ALERT PAGO PRESENCIAL */
+        .alert-pago-presencial {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fca5a5;
+            border-left: 6px solid #dc2626;
+            color: #7f1d1d;
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .alert-pago-presencial strong {
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .alert-pago-presencial ul {
+            margin: 0.75rem 0 0 1.5rem;
+            padding: 0;
+        }
+
+        .alert-pago-presencial li {
+            margin-bottom: 0.5rem;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .alert-certificado {
@@ -362,6 +389,23 @@
 
     <div class="row justify-content-center">
         <div class="col-md-7">
+
+            {{-- MENSAJES DE SESIÓN --}}
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%); border: 1px solid #86efac; border-left: 4px solid #16a34a;">
+                <i class="fas fa-check-circle me-2" style="color: #16a34a;"></i>
+                <strong>¡Éxito!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border: 1px solid #fca5a5; border-left: 4px solid #dc2626;">
+                <i class="fas fa-exclamation-circle me-2" style="color: #dc2626;"></i>
+                <strong>Error</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
 
             {{-- BUSCADOR --}}
             <div class="card search-card mb-4">
@@ -523,7 +567,29 @@
                     @endif
                 </div>
 
-                {{-- CERTIFICADO DISPONIBLE --}}
+                {{-- AVISO DE PAGO PRESENCIAL SI ESTÁ PENDIENTE --}}
+                @if($solicitud->estado_pago == 'pago_pendiente' || (is_null($solicitud->estado_pago) && in_array($solicitud->estado, ['recibido', 'aceptado', 'enviado_a_revision', 'en_revision'])))
+                <div class="alert-pago-presencial">
+                    <div style="font-size: 1.2rem; margin-bottom: 0.75rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div><strong>⚠️ IMPORTANTE - PAGO PRESENCIAL</strong></div>
+                    <p style="margin: 0.75rem 0 0.5rem 0;">
+                        El pago del trámite se realiza <strong>presencialmente en la Municipalidad</strong>.
+                    </p>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>✓ Acude a la Municipalidad presencialmente</li>
+                        <li>✓ Lleva tu código de seguimiento: <strong>{{ $solicitud->codigo_seguimiento }}</strong></li>
+                        <li>✓ Realiza el pago del monto indicado</li>
+                        <li>✓ Guarda el recibo como comprobante</li>
+                    </ul>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(220, 38, 38, 0.2);">
+                        <a href="{{ route('solicitudes.formulario.comprobante', $solicitud->codigo_seguimiento) }}" class="btn btn-danger btn-sm" style="font-weight: 600;">
+                            <i class="fas fa-upload me-2"></i>Subir Comprobante de Pago
+                        </a>
+                    </div>
+                </div>
+                @endif
                 @if($solicitud->estado == 'aprobado' && $solicitud->licencia_id)
                 <div class="alert-certificado">
                     <span><i class="fas fa-check-circle me-2"></i>Tu certificado está listo para consultar</span>

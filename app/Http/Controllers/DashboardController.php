@@ -6,6 +6,7 @@ use App\Models\Solicitud;
 use App\Models\Licencia;
 use App\Models\Contribuyente;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -14,24 +15,30 @@ class DashboardController extends Controller
     /**
      * Mostrar el dashboard principal
      */
-    public function index(): View
+    public function index(Request $request): View
     {
+        // Obtener año del filtro (por defecto el año actual)
+        $anio = $request->input('anio', now()->year);
+
         // ===== ESTADÍSTICAS PRINCIPALES =====
-        $solicitudes_total = Solicitud::count();
-        $solicitudes_recibidas = Solicitud::where('estado', 'recibido')->count();
-        $solicitudes_revision = Solicitud::where('estado', 'en_revision')->count();
-        $solicitudes_aprobadas = Solicitud::where('estado', 'aprobado')->count();
-        $solicitudes_rechazadas = Solicitud::where('estado', 'rechazado')->count();
+        $solicitudes_total = Solicitud::whereYear('created_at', $anio)->count();
+        $solicitudes_recibidas = Solicitud::where('estado', 'recibido')->whereYear('created_at', $anio)->count();
+        $solicitudes_revision = Solicitud::where('estado', 'en_revision')->whereYear('created_at', $anio)->count();
+        $solicitudes_aprobadas = Solicitud::where('estado', 'aprobado')->whereYear('created_at', $anio)->count();
+        $solicitudes_rechazadas = Solicitud::where('estado', 'rechazado')->whereYear('created_at', $anio)->count();
 
         // ===== CÁLCULOS DE VIGENCIA CON ESTADO CORRECTO =====
         // Un certificado es VIGENTE si estado='aprobado' y fecha_vencimiento >= hoy
         // Un certificado es VENCIDO si fecha_vencimiento < hoy
-        $licencias_total = Licencia::count();
+        $licencias_total = Licencia::whereYear('fecha_emision', $anio)->count();
         $licencias_vigentes = Licencia::where('estado', 'aprobado')
             ->where('fecha_vencimiento', '>=', today())
+            ->whereYear('fecha_emision', $anio)
             ->count();
         
-        $licencias_vencidas = Licencia::where('fecha_vencimiento', '<', today())->count();
+        $licencias_vencidas = Licencia::where('fecha_vencimiento', '<', today())
+            ->whereYear('fecha_emision', $anio)
+            ->count();
 
         $contribuyentes_total = Contribuyente::count();
 
@@ -79,6 +86,7 @@ class DashboardController extends Controller
         // ===== CERTIFICADOS PRÓXIMOS A VENCER =====
         $certificados_vencer = Licencia::whereBetween('fecha_vencimiento', [today(), today()->addDays(30)])
             ->where('estado', 'aprobado')
+            ->whereYear('fecha_emision', $anio)
             ->with('contribuyente')
             ->orderBy('fecha_vencimiento', 'ASC')
             ->limit(10)
@@ -148,6 +156,7 @@ class DashboardController extends Controller
             'datos_estado_solicitudes',
             'actividad_diaria',
             'dias_nombres',
+            'anio',
             'solicitudes_sin_procesar'
         ));
     }
@@ -160,5 +169,27 @@ class DashboardController extends Controller
             'evento_publico' => 'Evento Público',
             default => $tipo
         };
+    }
+
+    /**
+     * Exportar listado de certificados próximos a vencer a PDF
+     */
+    public function exportarVencerPdf(Request $request)
+    {
+        $anio = $request->input('anio', now()->year);
+
+        $certificados = Licencia::whereBetween('fecha_vencimiento', [today(), today()->addDays(30)])
+            ->where('estado', 'aprobado')
+            ->whereYear('fecha_emision', $anio)
+            ->with('contribuyente')
+            ->orderBy('fecha_vencimiento', 'ASC')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.certificados-vencer-pdf', [
+            'certificados' => $certificados,
+            'anio' => $anio,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('certificados-proximos-vencer-' . $anio . '.pdf');
     }
 }

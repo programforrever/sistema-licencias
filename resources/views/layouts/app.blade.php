@@ -438,18 +438,6 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
             Dashboard
         </a>
 
-        <a href="{{ route('reportes.index') }}"
-           class="{{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-            <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
-                <path d="M1 11L5 6l3 3.5L11 4l4 7H1z"
-                      stroke="currentColor" stroke-width="1.3"
-                      stroke-linejoin="round" fill="none"/>
-                <path d="M1 13h14" stroke="currentColor"
-                      stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            Reportes
-        </a>
-
         <!-- Gestión -->
         <div class="nav-section">Gestión</div>
 
@@ -523,37 +511,8 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
             Actividades
         </a>
 
-        <a href="{{ route('admin.signatures.index') }}"
-           class="{{ request()->routeIs('admin.signatures.*') ? 'active' : '' }}">
-            <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
-                <path d="M2 13.5c0-.83.67-1.5 1.5-1.5h9c.83 0 1.5.67 1.5 1.5"
-                      stroke="currentColor" stroke-width="1.3"/>
-                <circle cx="8" cy="5" r="3"
-                        stroke="currentColor" stroke-width="1.3" fill="none"/>
-                <path d="M5.5 11c-.5-.3-.8-.8-.8-1.4 0-.8.7-1.5 1.5-1.5h4.6c.8 0 1.5.7 1.5 1.5 0 .6-.3 1.1-.8 1.4"
-                      stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            Firmas Digitales
-        </a>
-
         <!-- Herramientas -->
         <div class="nav-section">Herramientas</div>
-
-        <a href="{{ route('importar.form') }}"
-           class="{{ request()->routeIs('importar.*') ? 'active' : '' }}">
-            <svg class="sb-icon" viewBox="0 0 16 16" fill="none">
-                <rect x="1" y="2" width="14" height="12" rx="1.5"
-                      stroke="currentColor" stroke-width="1.3" fill="none"/>
-                <path d="M5 2v12M9 2v12"
-                      stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".5"/>
-                <path d="M1 6h4M1 10h4M9 6h5M9 10h5"
-                      stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".5"/>
-                <path d="M6.5 7l2 2-2 2"
-                      stroke="currentColor" stroke-width="1.3"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Importar
-        </a>
 
         <a href="{{ route('usuarios.index') }}"
            class="{{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
@@ -633,6 +592,19 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
             } else {
                 this.setupEventListeners();
             }
+            // Cargar último conteo conocido desde sessionStorage (no queremos sonar en la primera carga)
+            try {
+                const stored = sessionStorage.getItem('notif_lastCount');
+                if (stored !== null) {
+                    this.lastCount = parseInt(stored, 10) || 0;
+                    this._firstFetchInitialized = true; // tenemos un valor previo
+                } else {
+                    this._firstFetchInitialized = false; // no teníamos un valor previo
+                }
+            } catch (e) {
+                this._firstFetchInitialized = true; // si sessionStorage falla, caer en comportamiento por defecto
+            }
+
             this.checkNotifications(); // Chequear inmediatamente
             this.startPolling();
         },
@@ -657,6 +629,8 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
                     if (modal.style.display === 'none' || modal.style.display === '') {
                         console.log('Abriendo modal...');
                         modal.style.display = 'flex';
+                        // Marcar como leído localmente: persistir lastCount para que no suene al recargar
+                        try { sessionStorage.setItem('notif_lastCount', String(this.lastCount || 0)); } catch(e) {}
                     } else {
                         console.log('Cerrando modal...');
                         modal.style.display = 'none';
@@ -712,22 +686,41 @@ zone .kpi-green .itse-kpi-val, .itse-green-zone .kpi-red .itse-kpi-val {
         updateUI(solicitudes, total) {
             const badge = document.getElementById('notif-badge');
             const container = document.getElementById('notif-container');
+            const sideBadge = document.querySelector('.sb-badge');
 
-            // Actualizar badge
+            // Actualizar badge en topbar
             if (total > 0) {
                 badge.textContent = total > 99 ? '99+' : total;
                 badge.style.display = 'block';
 
-                // Notificación visual si es nuevo
-                if (total > this.lastCount) {
-                    this.playNotificationSound();
-                    this.showBrowserNotification(total);
+                // Si no existía un valor almacenado (primera carga), NO debemos sonar.
+                if (!this._firstFetchInitialized) {
+                    // Inicializamos el estado sin reproducir sonido
+                    this._firstFetchInitialized = true;
+                    this.lastCount = total;
+                    try { sessionStorage.setItem('notif_lastCount', String(this.lastCount)); } catch (e) {}
+                } else {
+                    // Notificación visual si hay más que el último conteo conocido
+                    if (total > this.lastCount) {
+                        this.playNotificationSound();
+                        this.showBrowserNotification(total);
+                    }
+                    this.lastCount = total;
+                    try { sessionStorage.setItem('notif_lastCount', String(this.lastCount)); } catch (e) {}
+                }
+
+                // Actualizar badge en el sidebar (si existe)
+                if (sideBadge) {
+                    sideBadge.textContent = this.lastCount > 99 ? '99+' : this.lastCount;
+                    sideBadge.style.display = 'inline-block';
                 }
             } else {
                 badge.style.display = 'none';
+                // Si total es 0, actualizar último conteo y persistir
+                this.lastCount = 0;
+                try { sessionStorage.setItem('notif_lastCount', '0'); } catch (e) {}
+                if (sideBadge) sideBadge.style.display = 'none';
             }
-
-            this.lastCount = total;
             this.renderModal(solicitudes, total);
         },
 

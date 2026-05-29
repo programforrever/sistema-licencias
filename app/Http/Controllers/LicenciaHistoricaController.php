@@ -3,37 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\LicenciaHistorica;
-use App\Imports\LicenciasHistoricasImport;
+use App\Models\LicenciasImportRaw;
+use App\Imports\LicenciasITSE13RawImport;
+use App\Imports\LicenciasITSE14RawImport;
+use App\Imports\LicenciasECSERawImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use PDF;
 
 class LicenciaHistoricaController extends Controller
 {
     /**
-     * Dashboard con estadísticas
+     * Dashboard - Redirecciona a listar
      */
     public function index()
     {
-        $stats = [
-            'anexo_13' => [
-                'total' => LicenciaHistorica::where('tipo_certificado', 'anexo_13')->count(),
-                'vigentes' => LicenciaHistorica::where('tipo_certificado', 'anexo_13')->where('estado', 'vigente')->count(),
-                'vencidos' => LicenciaHistorica::where('tipo_certificado', 'anexo_13')->where('estado', 'vencido')->count(),
-            ],
-            'anexo_14' => [
-                'total' => LicenciaHistorica::where('tipo_certificado', 'anexo_14')->count(),
-                'vigentes' => LicenciaHistorica::where('tipo_certificado', 'anexo_14')->where('estado', 'vigente')->count(),
-                'vencidos' => LicenciaHistorica::where('tipo_certificado', 'anexo_14')->where('estado', 'vencido')->count(),
-            ],
-            'evento_publico' => [
-                'total' => LicenciaHistorica::where('tipo_certificado', 'evento_publico')->count(),
-            ],
-        ];
-
-        // Últimos registros importados
-        $recientes = LicenciaHistorica::latest()->take(10)->get();
-
-        return view('licencias-historicas.dashboard', compact('stats', 'recientes'));
+        return redirect()->route('licencias-historicas.listar');
     }
 
     /**
@@ -45,89 +32,67 @@ class LicenciaHistoricaController extends Controller
     }
 
     /**
-     * Previsualización de datos antes de importar
+     * Previsualización genérica por tipo
      */
     public function previsualizar(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'archivo.required' => 'Debes seleccionar un archivo',
-            'archivo.mimes' => 'El archivo debe ser Excel (.xlsx, .xls) o CSV',
-        ]);
-
         try {
-            $archivo = $request->file('archivo');
-            Log::info('Iniciando previsualización', [
-                'nombre' => $archivo->getClientOriginalName(),
-                'tamaño' => $archivo->getSize(),
-                'mime' => $archivo->getMimeType(),
+            // Validar entrada
+            $validated = $request->validate([
+                'archivo' => 'required|file|mimes:xlsx,xls',
+                'tipo' => 'required|in:itse13,itse14,ecse',
             ]);
-            
-            // Crear directorio si no existe
-            $importsDir = storage_path('app/imports');
-            if (!is_dir($importsDir)) {
-                mkdir($importsDir, 0755, true);
-                Log::info('Directorio de imports creado', ['path' => $importsDir]);
-            }
-            
-            // Guardar archivo con nombre único usando el path directo
-            $nombreArchivo = uniqid() . '_' . time() . '.xlsx';
-            $rutaCompleta = $importsDir . DIRECTORY_SEPARATOR . $nombreArchivo;
-            
-            // Guardar archivo directamente
-            $contenido = file_get_contents($archivo->getRealPath());
-            file_put_contents($rutaCompleta, $contenido);
-            
-            Log::info('Archivo guardado temporalmente', [
-                'nombre_archivo' => $nombreArchivo,
-                'ruta_completa' => $rutaCompleta,
-                'existe' => file_exists($rutaCompleta),
-                'tamaño' => filesize($rutaCompleta),
-            ]);
-            
-            // Verificar que el archivo fue guardado
-            if (!file_exists($rutaCompleta)) {
-                throw new \Exception('El archivo no se guardó correctamente en: ' . $rutaCompleta);
-            }
 
-            $importer = new LicenciasHistoricasImport();
+            $archivo = $request->file('archivo');
+            $tipo = $request->input('tipo');
+            
+            Log::info("📥 Previsualización iniciada", [
+                'tipo' => $tipo,
+                'archivo' => $archivo->getClientOriginalName(),
+                'tamaño' => $archivo->getSize()
+            ]);
+            
+            $importer = $this->getImporter($tipo);
+            $rutaCompleta = $this->guardarArchivo($archivo);
+            
+            Log::info("📂 Archivo guardado en", ['ruta' => $rutaCompleta]);
+            
             $resultado = $importer->preview($rutaCompleta);
 
-            Log::info('Previsualización completada', [
-                'total' => $resultado['totalRows'],
-                'omitidos' => $resultado['omitidos'],
-                'errores' => count($resultado['errores']),
+            Log::info("✅ Preview completado", [
+                'totalRows' => $resultado['totalRows'],
+                'preview_count' => count($resultado['preview'])
             ]);
 
             return response()->json([
                 'success' => true,
+                'archivo_temporal' => basename($rutaCompleta),
+                'totalRows' => (int)$resultado['totalRows'],
+                'omitidos' => 0,  // RAW importers no omite nada
                 'preview' => $resultado['preview'],
-                'errores' => $resultado['errores'],
-                'estadisticas' => [
-                    'total' => $resultado['totalRows'],
-                    'omitidos' => $resultado['omitidos'],
-                    'aImportar' => $resultado['totalRows'] - $resultado['omitidos'],
-                ],
-                'archivo_temporal' => $nombreArchivo,
+                'errores' => [],  // RAW importers no tiene errores críticos
             ]);
-        } catch (\Exception $e) {
-            Log::error('Error previsualizando importación', [
-                'error' => $e->getMessage(),
-                'archivo' => $request->file('archivo')->getClientOriginalName() ?? 'desconocido',
-                'línea' => $e->getLine(),
-                'archivo_php' => $e->getFile(),
-                'trace' => $e->getTraceAsString(),
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('❌ Error de validación en previsualización', [
+                'errores' => $e->errors()
             ]);
             
             return response()->json([
                 'success' => false,
-                'mensaje' => 'Error al procesar el archivo: ' . $e->getMessage(),
-                'debug' => config('app.debug') ? [
-                    'error' => $e->getMessage(),
-                    'línea' => $e->getLine(),
-                    'archivo' => $e->getFile(),
-                ] : null,
+                'mensaje' => 'Error de validación: ' . json_encode($e->errors()),
+            ], 422);
+            
+        } catch (\Exception $e) {
+            Log::error('❌ Error en previsualización', [
+                'error' => $e->getMessage(),
+                'archivo' => $request->file('archivo')?->getClientOriginalName() ?? 'desconocido',
+                'tipo' => $request->input('tipo') ?? 'desconocido'
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error: ' . $e->getMessage(),
             ], 422);
         }
     }
@@ -139,95 +104,148 @@ class LicenciaHistoricaController extends Controller
     {
         $request->validate([
             'archivo_temporal' => 'required|string',
+            'tipo' => 'required|in:itse13,itse14,ecse',
         ]);
 
         try {
-            // Construir ruta segura del archivo
+            $tipo = $request->input('tipo');
+            $nombres = ['itse13' => 'ITSE 13', 'itse14' => 'ITSE 14', 'ecse' => 'ECSE'];
+            
             $nombreArchivo = basename($request->archivo_temporal);
             $rutaCompleta = storage_path('app/imports/' . $nombreArchivo);
             
-            Log::info('Iniciando confirmación de importación', [
-                'nombre_archivo' => $nombreArchivo,
-                'ruta_completa' => $rutaCompleta,
-                'existe' => file_exists($rutaCompleta),
-            ]);
-
             if (!file_exists($rutaCompleta)) {
-                Log::error('Archivo temporal no encontrado', [
-                    'ruta_solicitada' => $rutaCompleta,
-                    'directorio_imports' => storage_path('app/imports'),
-                    'archivos_en_directorio' => @scandir(storage_path('app/imports')),
-                ]);
-                throw new \Exception('El archivo temporal no se encontró o ha expirado: ' . $nombreArchivo);
+                throw new \Exception('El archivo temporal no se encontró: ' . $nombreArchivo);
             }
 
-            $importer = new LicenciasHistoricasImport();
+            $importer = $this->getImporter($tipo);
             $resultado = $importer->import($rutaCompleta);
 
-            // Limpiar archivo temporal de forma segura
-            if (file_exists($rutaCompleta)) {
-                @unlink($rutaCompleta);
-                Log::info('Archivo temporal eliminado', ['archivo' => $nombreArchivo]);
-            }
-
-            Log::info('Importación de licencias históricas completada', [
+            // Limpiar archivo temporal
+            @unlink($rutaCompleta);
+            
+            Log::info("✅ Importación {$nombres[$tipo]} completada", [
                 'importados' => $resultado['importados'],
-                'omitidos' => $resultado['omitidos'],
+                'errores' => $resultado['errores'],
             ]);
 
             return response()->json([
                 'success' => true,
-                'mensaje' => "✅ Importación completada: {$resultado['importados']} registros importados, {$resultado['omitidos']} omitidos",
+                'mensaje' => "✅ Importación {$nombres[$tipo]}: {$resultado['importados']} registros importados, {$resultado['errores']} errores",
                 'importados' => $resultado['importados'],
-                'omitidos' => $resultado['omitidos'],
+                'omitidos' => 0,  // RAW importers import todo sin omitidos
                 'errores' => $resultado['errores'],
             ]);
+            
         } catch (\Exception $e) {
             Log::error('Error importando licencias históricas', [
                 'error' => $e->getMessage(),
-                'línea' => $e->getLine(),
-                'archivo' => $e->getFile(),
-                'trace' => $e->getTraceAsString(),
+                'tipo' => $tipo ?? 'desconocido'
             ]);
             
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error durante la importación: ' . $e->getMessage(),
-                'debug' => config('app.debug') ? [
-                    'error' => $e->getMessage(),
-                    'línea' => $e->getLine(),
-                ] : null,
             ], 422);
         }
     }
 
     /**
-     * Listar todas las licencias históricas con filtros
+     * Listar todas las licencias RAW importadas (ITSE 13 y 14 solamente)
+     * Vigencia: fecha_emision + 2 años >= hoy
+     * 
+     * Excluye ECSE (evento_publico)
+     * Usa timezone Perú para cálculos
      */
     public function listar(Request $request)
     {
-        $query = LicenciaHistorica::query();
+        // Configurar timezone Perú
+        $hoy = \Carbon\Carbon::now('America/Lima')->startOfDay();
+        
+        // Base query - SOLO ITSE 13 y 14
+        $query = LicenciasImportRaw::whereIn('tipo', ['anexo_13', 'anexo_14']);
 
-        // Filtros
+        // Filtro por tipo
         if ($request->tipo) {
-            $query->where('tipo_certificado', $request->tipo);
+            $query->where('tipo', $request->tipo);
         }
 
-        if ($request->estado) {
-            $query->where('estado', $request->estado);
+        // Filtro por rango de fechas
+        if ($request->fecha_desde) {
+            $query->where('fecha_emision', '>=', $request->fecha_desde);
+        }
+        if ($request->fecha_hasta) {
+            $query->where('fecha_emision', '<=', $request->fecha_hasta);
         }
 
+        // Búsqueda general
         if ($request->buscar) {
-            $query->where(function ($q) use ($request) {
-                $q->where('numero_licencia', 'like', '%' . $request->buscar . '%')
-                  ->orWhere('solicitante', 'like', '%' . $request->buscar . '%')
-                  ->orWhere('ubicacion', 'like', '%' . $request->buscar . '%');
+            $buscar = '%' . $request->buscar . '%';
+            $query->where(function ($q) use ($buscar) {
+                $q->where('numero_licencia', 'like', $buscar)
+                  ->orWhere('solicitante', 'like', $buscar)
+                  ->orWhere('nombre_comercial', 'like', $buscar)
+                  ->orWhere('ubicacion', 'like', $buscar);
             });
         }
 
-        $licencias = $query->latest()->paginate(50);
+        // Obtener TODOS los registros (no paginar aún)
+        $todosLosRegistros = $query->latest('fecha_emision')->get();
 
-        return view('licencias-historicas.listar', compact('licencias'));
+        // Calcular vigencia para cada registro
+        $registrosConVigencia = $todosLosRegistros->map(function ($item) use ($hoy) {
+            // ITSE13/14: Vigente si fecha_emision + 2 años >= hoy
+            if ($item->fecha_emision) {
+                $fecha_vencimiento = $item->fecha_emision->copy()->addYears(2);
+                $item->estado_vigencia = $fecha_vencimiento->startOfDay()->gte($hoy) ? 'vigente' : 'vencido';
+            } else {
+                $item->estado_vigencia = 'vigente'; // Sin fecha = vigente
+                $fecha_vencimiento = null;
+            }
+            
+            $item->fecha_vencimiento = $fecha_vencimiento;
+            
+            // Calcular días restantes (positivo = futuro, negativo = pasado)
+            if ($fecha_vencimiento) {
+                $dias_diff = $hoy->diffInDays($fecha_vencimiento, false);
+                $item->dias_restantes = (int) floor($dias_diff); // Redondear a entero
+            } else {
+                $item->dias_restantes = null;
+            }
+            
+            return $item;
+        });
+
+        // Aplicar filtro de vigencia si está solicitado
+        if ($request->vigencia) {
+            $registrosConVigencia = $registrosConVigencia->filter(function ($item) use ($request) {
+                return $item->estado_vigencia === $request->vigencia;
+            })->values();
+        }
+
+        // Calcular estadísticas sobre los registros filtrados
+        $stats = [
+            'vigentes' => $registrosConVigencia->where('estado_vigencia', 'vigente')->count(),
+            'vencidos' => $registrosConVigencia->where('estado_vigencia', 'vencido')->count(),
+            'total' => $registrosConVigencia->count(),
+        ];
+
+        // Paginar el resultado filtrado
+        $page = $request->get('page', 1);
+        $perPage = 50;
+        $total = $registrosConVigencia->count();
+        $licencias = new \Illuminate\Pagination\LengthAwarePaginator(
+            $registrosConVigencia->slice(($page - 1) * $perPage, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        return view('licencias-historicas.listar', compact('licencias', 'stats'));
     }
 
     /**
@@ -262,4 +280,216 @@ class LicenciaHistoricaController extends Controller
             'mensaje' => 'Exportación disponible próximamente',
         ]);
     }
+
+    /**
+     * Obtener importador según el tipo (VERSIÓN RAW - Sin validaciones complejas)
+     */
+    private function getImporter(string $tipo)
+    {
+        return match($tipo) {
+            'itse13' => new \App\Imports\LicenciasITSE13RawImport(),
+            'itse14' => new \App\Imports\LicenciasITSE14RawImport(),
+            'ecse' => new \App\Imports\LicenciasECSERawImport(),
+            default => throw new \Exception("Tipo de importador desconocido: $tipo"),
+        };
+    }
+
+    /**
+     * Guardar archivo temporal de forma segura
+     */
+    private function guardarArchivo($archivo): string
+    {
+        $importsDir = storage_path('app/imports');
+        if (!is_dir($importsDir)) {
+            mkdir($importsDir, 0755, true);
+        }
+        
+        $nombreArchivo = uniqid() . '_' . time() . '.xlsx';
+        $rutaCompleta = $importsDir . DIRECTORY_SEPARATOR . $nombreArchivo;
+        
+        $contenido = file_get_contents($archivo->getRealPath());
+        file_put_contents($rutaCompleta, $contenido);
+        
+        return $rutaCompleta;
+    }
+
+    /**
+     * Exportar licencias a Excel
+     */
+    public function exportarExcel(Request $request)
+    {
+        try {
+            $hoy = \Carbon\Carbon::now('America/Lima')->startOfDay();
+            
+            // Base query - SOLO ITSE 13 y 14
+            $query = LicenciasImportRaw::whereIn('tipo', ['anexo_13', 'anexo_14']);
+
+            // Aplicar filtros
+            if ($request->tipo) {
+                $query->where('tipo', $request->tipo);
+            }
+            if ($request->fecha_desde) {
+                $query->where('fecha_emision', '>=', $request->fecha_desde);
+            }
+            if ($request->fecha_hasta) {
+                $query->where('fecha_emision', '<=', $request->fecha_hasta);
+            }
+            if ($request->buscar) {
+                $buscar = '%' . $request->buscar . '%';
+                $query->where(function ($q) use ($buscar) {
+                    $q->where('numero_licencia', 'like', $buscar)
+                      ->orWhere('solicitante', 'like', $buscar)
+                      ->orWhere('nombre_comercial', 'like', $buscar)
+                      ->orWhere('ubicacion', 'like', $buscar);
+                });
+            }
+
+            // Obtener datos
+            $licencias = $query->latest('fecha_emision')->get();
+
+            // Procesar datos para exportación
+            $datos = $licencias->map(function ($lic) use ($hoy) {
+                // Calcular estado vigencia
+                if ($lic->fecha_emision) {
+                    $fecha_vencimiento = $lic->fecha_emision->copy()->addYears(2);
+                    $estado = $fecha_vencimiento->startOfDay()->gte($hoy) ? 'Vigente' : 'Vencido';
+                    $dias = (int) floor($hoy->diffInDays($fecha_vencimiento, false));
+                } else {
+                    $estado = 'Vigente';
+                    $dias = null;
+                    $fecha_vencimiento = null;
+                }
+
+                return [
+                    'Nº Licencia' => $lic->numero_licencia,
+                    'Tipo' => $lic->tipo === 'anexo_13' ? 'ITSE 13' : 'ITSE 14',
+                    'Solicitante' => $lic->solicitante,
+                    'Nombre Comercial' => $lic->nombre_comercial,
+                    'Ubicación' => $lic->ubicacion,
+                    'Fecha Emisión' => $lic->fecha_emision?->format('d/m/Y'),
+                    'Fecha Vencimiento' => $fecha_vencimiento?->format('d/m/Y'),
+                    'Estado' => $estado,
+                    'Días' => $dias,
+                    'Mes' => $lic->mes,
+                    'Anexo' => $lic->anexo,
+                    'Nº Expediente' => $lic->numero_expediente,
+                    'Actividad' => $lic->actividad,
+                ];
+            });
+
+            // Crear nombre de archivo
+            $fecha = now()->format('Y-m-d_H-i-s');
+            $nombreArchivo = "licencias_exportadas_{$fecha}.xlsx";
+
+            // Exportar usando array
+            return Excel::download(
+                new class($datos->toArray()) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+                    public function __construct(private array $datos) {}
+                    
+                    public function array(): array {
+                        return $this->datos;
+                    }
+                    
+                    public function headings(): array {
+                        return array_keys($this->datos[0] ?? []);
+                    }
+                },
+                $nombreArchivo
+            );
+            
+        } catch (\Exception $e) {
+            Log::error('Error exportando a Excel', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error al exportar: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Exportar licencias a PDF
+     */
+    public function exportarPdf(Request $request)
+    {
+        try {
+            $hoy = \Carbon\Carbon::now('America/Lima')->startOfDay();
+            
+            // Base query - SOLO ITSE 13 y 14
+            $query = LicenciasImportRaw::whereIn('tipo', ['anexo_13', 'anexo_14']);
+
+            // Aplicar filtros
+            if ($request->tipo) {
+                $query->where('tipo', $request->tipo);
+            }
+            if ($request->fecha_desde) {
+                $query->where('fecha_emision', '>=', $request->fecha_desde);
+            }
+            if ($request->fecha_hasta) {
+                $query->where('fecha_emision', '<=', $request->fecha_hasta);
+            }
+            if ($request->buscar) {
+                $buscar = '%' . $request->buscar . '%';
+                $query->where(function ($q) use ($buscar) {
+                    $q->where('numero_licencia', 'like', $buscar)
+                      ->orWhere('solicitante', 'like', $buscar)
+                      ->orWhere('nombre_comercial', 'like', $buscar)
+                      ->orWhere('ubicacion', 'like', $buscar);
+                });
+            }
+
+            // Obtener datos ordenados
+            $todosLosRegistros = $query->latest('fecha_emision')->get();
+
+            // Procesar datos con vigencia
+            $licencias = $todosLosRegistros->map(function ($lic) use ($hoy) {
+                if ($lic->fecha_emision) {
+                    $fecha_vencimiento = $lic->fecha_emision->copy()->addYears(2);
+                    $estado = $fecha_vencimiento->startOfDay()->gte($hoy) ? 'Vigente' : 'Vencido';
+                } else {
+                    $estado = 'Vigente';
+                    $fecha_vencimiento = null;
+                }
+
+                return [
+                    'numero_licencia' => $lic->numero_licencia,
+                    'tipo' => $lic->tipo === 'anexo_13' ? 'ITSE 13' : 'ITSE 14',
+                    'solicitante' => $lic->solicitante,
+                    'nombre_comercial' => $lic->nombre_comercial,
+                    'ubicacion' => $lic->ubicacion,
+                    'fecha_emision' => $lic->fecha_emision?->format('d/m/Y') ?? '-',
+                    'fecha_vencimiento' => $fecha_vencimiento?->format('d/m/Y') ?? '-',
+                    'estado' => $estado,
+                ];
+            });
+
+            // Filtrar por vigencia si está solicitado (IMPORTANTE!)
+            if ($request->vigencia) {
+                $licencias = $licencias->filter(function ($item) use ($request) {
+                    return strtolower($item['estado']) === strtolower($request->vigencia);
+                })->values();
+            }
+
+            // Contar por estado
+            $vigentes = $licencias->where('estado', 'Vigente')->count();
+            $vencidos = $licencias->where('estado', 'Vencido')->count();
+            $total = $licencias->count();
+
+            // Crear PDF
+            $pdf = PDF::loadView('licencias-historicas.export-pdf-nuevo', [
+                'licencias' => $licencias,
+                'vigentes' => $vigentes,
+                'vencidos' => $vencidos,
+                'total' => $total,
+                'fecha_exportacion' => now('America/Lima')->format('d/m/Y H:i:s'),
+            ]);
+
+            // Configurar PDF: landscape para que quepa mejor
+            $pdf->setPaper('letter', 'landscape');
+            
+            $fecha = now()->format('Y-m-d_H-i-s');
+            return $pdf->download("licencias_exportadas_{$fecha}.pdf");
+            
+        } catch (\Exception $e) {
+            Log::error('Error exportando a PDF', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error al exportar: ' . $e->getMessage());
+        }
+    }
 }
+

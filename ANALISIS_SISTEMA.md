@@ -141,3 +141,16 @@ SEGURIDAD: 75% ███████░░░
 7. Reportes avanzados
 8. API pública
 9. Aplicación móvil
+
+
+
+
+
+
+drag drisn
+sistem loadres 
+ adjntar archivo frimado 
+  solciido firmadad. 
+  pdf adjunto. firmado.
+
+  attachmeth.

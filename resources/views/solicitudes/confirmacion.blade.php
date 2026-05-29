@@ -127,18 +127,34 @@
         .badge-a14  { background: #fff1f2; color: #be123c; }
 
         .alert-custom {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border: 1px solid #bae6fd;
-            border-left: 4px solid var(--brand);
-            color: #0c4a6e;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fca5a5;
+            border-left: 6px solid #dc2626;
+            color: #7f1d1d;
             border-radius: 10px;
-            padding: 1rem;
-            font-size: 0.85rem;
-            margin: 1.25rem 0;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            margin: 1.5rem 0;
+            line-height: 1.6;
         }
 
         .alert-custom strong {
-            color: var(--brand-dark);
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .alert-custom ul {
+            margin: 0.75rem 0 0 1.5rem;
+            padding: 0;
+        }
+
+        .alert-custom li {
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .action-buttons {
@@ -406,8 +422,20 @@
                 </div>
 
                 <div class="alert-custom">
-                    <i class="fas fa-paper-plane me-2"></i>
-                    El equipo de la municipalidad revisará tu solicitud y te notificará al WhatsApp <strong>+51 9 {{ $solicitud->telefono_whatsapp }}</strong>.
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div><strong>⚠️ AVISO IMPORTANTE - PAGO PRESENCIAL</strong></div>
+                    <p style="margin: 0.75rem 0 0.5rem 0;">
+                        El pago del trámite se realiza <strong>presencialmente en la Municipalidad</strong>.
+                    </p>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>✓ Completa tu solicitud online (ya está hecha)</li>
+                        <li>✓ Guarda este ticket con el QR de pago</li>
+                        <li>✓ Acude a la Municipalidad presencialmente con este ticket</li>
+                        <li>✓ Realiza el pago del monto indicado en este ticket</li>
+                        <li>✓ La Municipalidad confirmará tu pago</li>
+                    </ul>
                 </div>
 
                 <!-- SECCIÓN DE TICKET DE PAGO -->
@@ -416,12 +444,12 @@
                         <i class="fas fa-receipt"></i> Tu Ticket de Pago
                     </div>
                     <div class="ticket-header-subtitle">
-                        Este ticket contiene tu código de seguimiento y un QR para acceder a tu trámite
+                        Presenta este ticket en la Municipalidad para realizar el pago. El QR contiene tu código de seguimiento.
                     </div>
 
                     <div class="ticket-info-badge">
                         <i class="fas fa-info-circle"></i>
-                        Guarda este ticket como comprobante de tu pago
+                        <strong>El monto se paga en caja.</strong> Guarda el recibo como comprobante.
                     </div>
 
                     <!-- Preview del Ticket -->

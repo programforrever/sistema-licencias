@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Permitir archivos reales
+    RewriteCond %{REQUEST_FILENAME} -f [L]
+    RewriteRule ^.*$ - [L]
+
+    # Permitir directorios reales EXCEPTO si es request a raíz
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_URI} !^/$
+    RewriteRule ^.*$ - [L]
+
+    # Redirigir raíz (/) a public/index.php
+    RewriteCond %{REQUEST_URI} ^/$
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+
+    # Redirigir TODO lo demás a /public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [QSA,L]
+</IfModule>

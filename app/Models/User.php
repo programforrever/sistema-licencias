@@ -42,4 +42,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Licencia::class, 'signed_by_user_id');
     }
+
+    /**
+     * Relación con los códigos de recuperación de contraseña
+     */
+    public function passwordResetCodes()
+    {
+        return $this->hasMany(PasswordResetCode::class);
+    }
 }

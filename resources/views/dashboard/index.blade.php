@@ -572,7 +572,19 @@ body.dark-mode .itse-card-sub {
             <h1>Dashboard ITSE</h1>
             <p>{{ now()->format('d \d\e F \d\e Y \a \l\a\s H:i') }}</p>
         </div>
-        <div class="itse-btn-group">
+        <div class="itse-btn-group" style="display: flex; gap: 12px; align-items: center;">
+            <form method="GET" action="{{ route('dashboard') }}" style="display: flex; gap: 8px; align-items: center;">
+                <label for="anio-filter" style="color: rgba(255,255,255,.75); font-size: 12px; font-weight: 500;">Filtrar por año:</label>
+                <select id="anio-filter" name="anio" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.15); color: #ffffff; font-size: 13px; cursor: pointer;" onchange="this.form.submit();">
+                    @php
+                        $anioActual = now()->year;
+                        $anioDesde = $anioActual - 5;
+                    @endphp
+                    @for($i = $anioDesde; $i <= $anioActual; $i++)
+                        <option value="{{ $i }}" {{ $i == $anio ? 'selected' : '' }}>{{ $i }}</option>
+                    @endfor
+                </select>
+            </form>
             <a href="{{ route('licencias.index') }}" class="itse-btn">
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Certificados
@@ -676,7 +688,13 @@ body.dark-mode .itse-card-sub {
                 Certificados Próximos a Vencer
                 <span style="color:var(--amber);font-weight:400;font-size:12px">&nbsp;(30 días)</span>
             </span>
-            <span class="itse-badge badge-amber">{{ count($certificados_vencer) }} registros</span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="itse-badge badge-amber">{{ count($certificados_vencer) }} registros</span>
+                <a href="{{ route('dashboard.exportar-vencer-pdf', ['anio' => $anio]) }}" class="itse-btn" style="padding: 6px 12px; font-size: 11px; background: #dc3545; color: white; border-color: #dc3545;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M3 10l5 4 5-4M2 14h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    PDF
+                </a>
+            </div>
         </div>
         <div class="itse-table-scroll">
             <table class="itse-table">

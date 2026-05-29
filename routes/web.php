@@ -34,6 +34,8 @@ Route::get('tramite', [SolicitudController::class, 'formulario'])->name('solicit
 Route::any('tramite/enviar', [SolicitudController::class, 'enviar'])->name('solicitudes.enviar');
 Route::get('tramite/confirmacion/{codigo}', [SolicitudController::class, 'confirmacion'])->name('solicitudes.confirmacion');
 Route::get('tramite/seguimiento', [SolicitudController::class, 'seguimiento'])->name('solicitudes.seguimiento');
+Route::get('tramite/comprobante/{codigo}', [SolicitudController::class, 'formularioComprobante'])->name('solicitudes.formulario.comprobante');
+Route::post('tramite/comprobante/{codigo}', [SolicitudController::class, 'guardarComprobante'])->name('solicitudes.guardar.comprobante');
 
 // Revisión de solicitudes (público - para revisores)
 Route::get('revision/{token}', [RevisionSolicitudController::class, 'formulario'])->name('revision.formulario');
@@ -50,6 +52,7 @@ Route::withoutMiddleware(['Illuminate\Foundation\Http\Middleware\VerifyCsrfToken
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/exportar-vencer-pdf', [DashboardController::class, 'exportarVencerPdf'])->name('dashboard.exportar-vencer-pdf');
 
     // IMPORTANTE: esta ruta debe ir ANTES del resource de licencias
     Route::get('licencias/crear-desde/{solicitud}', [LicenciaController::class, 'crearDesdeSolicitud'])->name('licencias.crear-desde-solicitud');
@@ -103,6 +106,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/previsualizar', [LicenciaHistoricaController::class, 'previsualizar'])->name('previsualizar');
         Route::post('/confirmar', [LicenciaHistoricaController::class, 'confirmar'])->name('confirmar');
         Route::get('/listar', [LicenciaHistoricaController::class, 'listar'])->name('listar');
+        Route::get('/exportar-excel', [LicenciaHistoricaController::class, 'exportarExcel'])->name('exportar-excel');
+        Route::get('/exportar-pdf', [LicenciaHistoricaController::class, 'exportarPdf'])->name('exportar-pdf');
         Route::get('/{licenciaHistorica}', [LicenciaHistoricaController::class, 'show'])->name('show');
         Route::delete('/{licenciaHistorica}', [LicenciaHistoricaController::class, 'destroy'])->name('destroy');
         Route::get('/exportar', [LicenciaHistoricaController::class, 'exportar'])->name('exportar');
@@ -117,6 +122,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('licencias.preview-firma');
     Route::post('licencias/{licencia}/firmar', [LicenciaSignatureController::class, 'firmar'])
         ->name('licencias.firmar.procesar');
+    Route::post('licencias/{licencia}/adjuntar-pdf-firmado', [LicenciaSignatureController::class, 'adjuntarPdfFirmado'])
+        ->name('licencias.adjuntar-pdf-firmado');
     Route::get('licencias/{licencia}/descargar', [LicenciaSignatureController::class, 'descargar'])
         ->name('licencias.descargar');
     Route::get('licencias/{licencia}/descargar-original', [LicenciaSignatureController::class, 'descargarOriginal'])

@@ -9,37 +9,55 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <i class="fas fa-file-excel me-2"></i>Seleccionar Archivo Excel
+    <!-- ITSE 13 -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-certificate me-2"></i>ITSE 13 (Riesgo Bajo/Medio)
             </div>
             <div class="card-body">
-                <form id="formImportacion">
+                <form class="formImportacion" data-tipo="itse13">
                     @csrf
+                    <input type="hidden" name="tipo" value="itse13">
                     
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label fw-bold">Archivo Excel (.xlsx, .xls)</label>
                         <div class="input-group">
-                            <input type="file" class="form-control" id="archivo" name="archivo" 
-                                accept=".xlsx,.xls,.csv" required>
-                            <button class="btn btn-primary" type="button" id="btnSubir">
+                            <input type="file" class="form-control archivo" accept=".xlsx,.xls" required>
+                            <button class="btn btn-primary btnSubir" type="button">
                                 <i class="fas fa-search me-2"></i>Previsualizar
                             </button>
-                            <a href="{{ route('licencias-historicas.descargar-ejemplo') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-download me-2"></i>Descargar Ejemplo
-                            </a>
                         </div>
-                        <small class="text-muted d-block mt-2">
-                            ℹ️ Formato esperado: Nº | ANEXO | FECHA* | INFORME Nº | EXPEDIENTE | ACTIVIDAD | NOMBRE | SOLICITANTE | UBICACIÓN<br/>
-                            <small>*FECHA: DD/MM/YYYY, NNN - YYYY, o solo YYYY</small>
-                        </small>
                     </div>
-
-                    <!-- Indicador de carga -->
-                    <div id="indicadorCarga" style="display:none;">
-                        <div class="alert alert-info">
-                            <i class="fas fa-spinner fa-spin"></i> Analizando archivo...
+                    
+                    <div class="indicadorCarga" style="display:none;">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-spinner fa-spin"></i> Analizando...
+                        </div>
+                    </div>
+                    
+                    <div class="seccionPreview" style="display:none;">
+                        <div class="alert alert-success mb-2">
+                            <h6 class="mb-2"><i class="fas fa-check-circle me-2"></i>Resumen</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Total a importar</small>
+                                    <strong class="totalRegistros">0</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Válidos</small>
+                                    <strong class="registrosValidos text-success">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success btnConfirmar" type="button">
+                                <i class="fas fa-check me-2"></i>Importar
+                            </button>
+                            <button class="btn btn-secondary btnCancelar" type="button">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -47,271 +65,228 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="card shadow-sm bg-light">
+    <!-- ITSE 14 -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-info">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-certificate me-2"></i>ITSE 14 (Riesgo Alto)
+            </div>
             <div class="card-body">
-                <h6 class="card-title"><i class="fas fa-info-circle me-2"></i>Información</h6>
-                <ul class="small mb-0">
-                    <li>✅ Soporta hojas: ANEXO 13, ANEXO 14, ECSE</li>
-                    <li>✅ Valida datos antes de importar</li>
-                    <li>✅ Previsualiza los cambios</li>
-                    <li>✅ Todo o nada (transacción segura)</li>
-                    <li>⚠️ No importa duplicados</li>                    <li style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                        <strong>Formatos de fecha (Col. C):</strong><br/>
-                        • DD/MM/YYYY (ej: 15/03/2024)<br/>
-                        • NNN - YYYY (ej: 008 - 2024)<br/>
-                        • Solo YYYY (ej: 2024)
-                    </li>                </ul>
+                <form class="formImportacion" data-tipo="itse14">
+                    @csrf
+                    <input type="hidden" name="tipo" value="itse14">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Archivo Excel (.xlsx, .xls)</label>
+                        <div class="input-group">
+                            <input type="file" class="form-control archivo" accept=".xlsx,.xls" required>
+                            <button class="btn btn-primary btnSubir" type="button">
+                                <i class="fas fa-search me-2"></i>Previsualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="indicadorCarga" style="display:none;">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-spinner fa-spin"></i> Analizando...
+                        </div>
+                    </div>
+                    
+                    <div class="seccionPreview" style="display:none;">
+                        <div class="alert alert-success mb-2">
+                            <h6 class="mb-2"><i class="fas fa-check-circle me-2"></i>Resumen</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Total a importar</small>
+                                    <strong class="totalRegistros">0</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Válidos</small>
+                                    <strong class="registrosValidos text-success">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success btnConfirmar" type="button">
+                                <i class="fas fa-check me-2"></i>Importar
+                            </button>
+                            <button class="btn btn-secondary btnCancelar" type="button">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Preview de Datos -->
-<div id="seccionPreview" style="display:none; margin-top: 30px;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-info text-white">
-            <i class="fas fa-eye me-2"></i>Previsualización de Datos
-        </div>
-        <div class="card-body">
-            <!-- Estadísticas -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
-                        <h4 class="text-primary mb-1" id="totalRegistros">0</h4>
-                        <small>Total a importar</small>
+    <!-- ECSE -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-users me-2"></i>ECSE (Eventos Públicos)
+            </div>
+            <div class="card-body">
+                <form class="formImportacion" data-tipo="ecse">
+                    @csrf
+                    <input type="hidden" name="tipo" value="ecse">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Archivo Excel (.xlsx, .xls)</label>
+                        <div class="input-group">
+                            <input type="file" class="form-control archivo" accept=".xlsx,.xls" required>
+                            <button class="btn btn-primary btnSubir" type="button">
+                                <i class="fas fa-search me-2"></i>Previsualizar
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center p-3 bg-success bg-opacity-10 rounded">
-                        <h4 class="text-success mb-1" id="registrosValidos">0</h4>
-                        <small>Válidos</small>
+                    
+                    <div class="indicadorCarga" style="display:none;">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-spinner fa-spin"></i> Analizando...
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
-                        <h4 class="text-warning mb-1" id="registrosOmitidos">0</h4>
-                        <small>Omitidos</small>
+                    
+                    <div class="seccionPreview" style="display:none;">
+                        <div class="alert alert-success mb-2">
+                            <h6 class="mb-2"><i class="fas fa-check-circle me-2"></i>Resumen</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Total a importar</small>
+                                    <strong class="totalRegistros">0</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Válidos</small>
+                                    <strong class="registrosValidos text-success">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success btnConfirmar" type="button">
+                                <i class="fas fa-check me-2"></i>Importar
+                            </button>
+                            <button class="btn btn-secondary btnCancelar" type="button">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
-                        <h4 class="text-danger mb-1" id="registrosErrores">0</h4>
-                        <small>Errores</small>
-                    </div>
-                </div>
+                </form>
             </div>
-
-            <!-- Errores -->
-            <div id="seccionErrores" style="display:none; margin-bottom: 20px;">
-                <div class="alert alert-danger">
-                    <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Problemas Detectados</h6>
-                    <ul id="listaErrores" class="mb-0"></ul>
-                </div>
-            </div>
-
-            <!-- Tabla Preview -->
-            <div class="table-responsive mb-4">
-                <table class="table table-sm table-hover" id="tablaPreview">
-                    <thead>
-                        <tr>
-                            <th>Nº Licencia</th>
-                            <th>Tipo</th>
-                            <th>Solicitante</th>
-                            <th>Ubicación</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpoTabla">
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="d-flex gap-2">
-                <button class="btn btn-success" id="btnConfirmar">
-                    <i class="fas fa-check me-2"></i>Confirmar Importación
-                </button>
-                <button class="btn btn-secondary" id="btnCancelar">
-                    <i class="fas fa-times me-2"></i>Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Loading Import -->
-<div id="seccionImportando" style="display:none; margin-top: 30px;">
-    <div class="card shadow-sm">
-        <div class="card-body text-center py-5">
-            <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Importando...</span>
-            </div>
-            <h5>Importando datos...</h5>
-            <small class="text-muted">No cierres esta ventana</small>
         </div>
     </div>
 </div>
 
 <script>
-let archivoTemporal = null;
-
-// Helper para obtener CSRF token de forma segura
-function obtenerCSRFToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    if (!meta) {
-        console.error('❌ Token CSRF no encontrado en el HTML');
-        throw new Error('Token CSRF no disponible en esta sesión');
-    }
-    return meta.content || meta.getAttribute('content');
-}
-
-document.getElementById('btnSubir').addEventListener('click', async function() {
-    const archivo = document.getElementById('archivo').files[0];
+document.querySelectorAll('.formImportacion').forEach(form => {
+    const tipo = form.dataset.tipo;
+    const btnSubir = form.querySelector('.btnSubir');
+    const btnConfirmar = form.querySelector('.btnConfirmar');
+    const btnCancelar = form.querySelector('.btnCancelar');
+    const archivo = form.querySelector('.archivo');
+    const indicadorCarga = form.querySelector('.indicadorCarga');
+    const seccionPreview = form.querySelector('.seccionPreview');
+    const totalRegistros = form.querySelector('.totalRegistros');
+    const registrosValidos = form.querySelector('.registrosValidos');
     
-    if (!archivo) {
-        alert('Por favor selecciona un archivo');
-        return;
-    }
+    let archivoTemporal = null;
 
-    const formData = new FormData();
-    formData.append('archivo', archivo);
-
-    document.getElementById('indicadorCarga').style.display = 'block';
-
-    try {
-        const csrfToken = obtenerCSRFToken();
-        
-        const response = await fetch('{{ route("licencias-historicas.previsualizar") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            let mensajeError = data.mensaje || 'Error desconocido';
-            
-            // Si hay información de debug, mostrarla
-            if (data.debug) {
-                mensajeError += '\n\nDetalles: ' + data.debug;
-            }
-            
-            // Si hay errores específicos, mostrarlos
-            if (data.errores && data.errores.length > 0) {
-                mensajeError += '\n\nProblemas encontrados:\n' + data.errores.map(e => '• ' + e).join('\n');
-            }
-            
-            alert('❌ ' + mensajeError);
-            document.getElementById('indicadorCarga').style.display = 'none';
+    btnSubir.addEventListener('click', async function() {
+        if (!archivo.files.length) {
+            alert('Por favor selecciona un archivo');
             return;
         }
 
-        // Validar que hay datos para importar
-        if (data.estadisticas.total === 0) {
-            let detalles = 'No se encontraron datos válidos para importar.';
-            if (data.errores && data.errores.length > 0) {
-                detalles += '\n\nProblemas:\n' + data.errores.map(e => '• ' + e).join('\n');
+        indicadorCarga.style.display = 'block';
+        seccionPreview.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('archivo', archivo.files[0]);
+        formData.append('tipo', tipo);
+        formData.append('_token', form.querySelector('[name="_token"]').value);
+
+        try {
+            const response = await fetch('{{ route("licencias-historicas.previsualizar") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            console.log('📊 Respuesta del servidor:', {
+                success: data.success,
+                totalRows: data.totalRows,
+                omitidos: data.omitidos,
+                mensaje: data.mensaje,
+                data_completa: data
+            });
+
+            if (!data.success) {
+                alert('Error: ' + data.mensaje);
+                indicadorCarga.style.display = 'none';
+                return;
             }
-            alert('⚠️ ' + detalles);
-            document.getElementById('indicadorCarga').style.display = 'none';
-            return;
+
+            archivoTemporal = data.archivo_temporal;
+            const totalRows = parseInt(data.totalRows) || 0;
+            const omitidos = parseInt(data.omitidos) || 0;
+            const validos = totalRows - omitidos;
+
+            console.log('✅ Valores calculados:', {
+                totalRows,
+                omitidos,
+                validos
+            });
+
+            totalRegistros.textContent = totalRows;
+            registrosValidos.textContent = validos;
+
+            indicadorCarga.style.display = 'none';
+            seccionPreview.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error en la previsualización');
+            indicadorCarga.style.display = 'none';
         }
+    });
 
-        // Actualizar estadísticas
-        document.getElementById('totalRegistros').textContent = data.estadisticas.total;
-        document.getElementById('registrosValidos').textContent = data.estadisticas.aImportar;
-        document.getElementById('registrosOmitidos').textContent = data.estadisticas.omitidos;
-        document.getElementById('registrosErrores').textContent = data.errores.length;
+    btnConfirmar.addEventListener('click', async function() {
+        if (!archivoTemporal) return;
 
-        // Mostrar errores si los hay
-        if (data.errores.length > 0) {
-            document.getElementById('seccionErrores').style.display = 'block';
-            const listaErrores = document.getElementById('listaErrores');
-            listaErrores.innerHTML = data.errores.map(err => `<li>${err}</li>`).join('');
-        } else {
-            document.getElementById('seccionErrores').style.display = 'none';
+        const formData = new FormData();
+        formData.append('archivo_temporal', archivoTemporal);
+        formData.append('tipo', tipo);
+        formData.append('_token', form.querySelector('[name="_token"]').value);
+
+        try {
+            const response = await fetch('{{ route("licencias-historicas.confirmar") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ ' + data.mensaje);
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                alert('❌ ' + data.mensaje);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al importar');
         }
+    });
 
-        // Llenar tabla preview
-        const cuerpo = document.getElementById('cuerpoTabla');
-        cuerpo.innerHTML = data.preview.map(item => `
-            <tr>
-                <td><strong>${item.numero_licencia}</strong></td>
-                <td><span class="badge bg-info">${item.tipo_nombre ? item.tipo_nombre.substring(0, 12) : item.tipo_certificado}</span></td>
-                <td>${item.solicitante}</td>
-                <td><small>${item.ubicacion || '-'}</small></td>
-                <td>${new Date(item.fecha_emision).toLocaleDateString('es-ES')}</td>
-                <td>
-                    <span class="badge ${item.estado === 'vigente' ? 'bg-success' : (item.estado === 'vencido' ? 'bg-danger' : 'bg-secondary')}">
-                        ${item.estado}
-                    </span>
-                </td>
-            </tr>
-        `).join('');
-
-        archivoTemporal = data.archivo_temporal;
-        document.getElementById('seccionPreview').style.display = 'block';
-        document.getElementById('indicadorCarga').style.display = 'none';
-
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('❌ Error al procesar el archivo:\n' + error.message);
-        document.getElementById('indicadorCarga').style.display = 'none';
-    }
-});
-
-document.getElementById('btnConfirmar').addEventListener('click', async function() {
-    if (!archivoTemporal) {
-        alert('Error: archivo temporal no disponible');
-        return;
-    }
-
-    document.getElementById('seccionPreview').style.display = 'none';
-    document.getElementById('seccionImportando').style.display = 'block';
-
-    try {
-        const csrfToken = obtenerCSRFToken();
-        
-        const response = await fetch('{{ route("licencias-historicas.confirmar") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({
-                archivo_temporal: archivoTemporal
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert(`✅ ${data.mensaje}`);
-            setTimeout(() => {
-                window.location.href = '{{ route("licencias-historicas.index") }}';
-            }, 1000);
-        } else {
-            alert(`❌ ${data.mensaje}`);
-            document.getElementById('seccionImportando').style.display = 'none';
-            document.getElementById('seccionPreview').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('❌ Error durante la importación:\n' + error.message);
-        document.getElementById('seccionImportando').style.display = 'none';
-        document.getElementById('seccionPreview').style.display = 'block';
-    }
-});
-
-document.getElementById('btnCancelar').addEventListener('click', function() {
-    document.getElementById('seccionPreview').style.display = 'none';
-    document.getElementById('archivo').value = '';
-    archivoTemporal = null;
+    btnCancelar.addEventListener('click', function() {
+        seccionPreview.style.display = 'none';
+        archivo.value = '';
+        archivoTemporal = null;
+    });
 });
 </script>
 @endsection

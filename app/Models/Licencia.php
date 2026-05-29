@@ -46,6 +46,8 @@ class Licencia extends Model
         'pdf_firmado_path',
         'signed_by_user_id',
         'signed_at',
+        'pdf_adjunto_firmado_path',
+        'firmado_adjunto_at',
     ];
 
     protected $casts = [
@@ -53,6 +55,7 @@ class Licencia extends Model
         'fecha_vencimiento' => 'date',
         'fecha_evento' => 'date',
         'signed_at' => 'datetime',
+        'firmado_adjunto_at' => 'datetime',
     ];
 
     public function contribuyente()

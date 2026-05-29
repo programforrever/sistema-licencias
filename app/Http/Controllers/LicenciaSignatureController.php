@@ -291,19 +291,94 @@ class LicenciaSignatureController extends Controller
     }
 
     /**
-     * Descarga el PDF firmado
+     * Adjunta un PDF ya firmado (mediante drag-drop)
+     */
+    public function adjuntarPdfFirmado(Request $request, Licencia $licencia)
+    {
+        // Verificar permisos
+        $this->authorize('sign', $licencia);
+
+        // Validar que sea un PDF
+        $validated = $request->validate([
+            'pdf_adjunto' => 'required|file|mimes:pdf|max:10240', // máximo 10MB
+        ], [
+            'pdf_adjunto.required' => 'Debes seleccionar un archivo PDF',
+            'pdf_adjunto.mimes' => 'El archivo debe ser un PDF válido',
+            'pdf_adjunto.max' => 'El archivo no puede exceder 10MB',
+        ]);
+
+        try {
+            // Crear directorio para PDFs adjuntos si no existe
+            Storage::disk('public')->makeDirectory('certificados/adjuntos', 0755, true);
+
+            // Generar nombre único para el PDF adjunto
+            $fileName = 'certificados/adjuntos/' . $licencia->numero_licencia . '_adjunto_' . time() . '.pdf';
+            
+            // Guardar el archivo
+            $path = $request->file('pdf_adjunto')->storeAs(
+                'certificados/adjuntos',
+                $licencia->numero_licencia . '_adjunto_' . time() . '.pdf',
+                'public'
+            );
+
+            // Eliminar PDF adjunto anterior si existe
+            if ($licencia->pdf_adjunto_firmado_path && Storage::disk('public')->exists($licencia->pdf_adjunto_firmado_path)) {
+                Storage::disk('public')->delete($licencia->pdf_adjunto_firmado_path);
+            }
+
+            // Actualizar registro con el nuevo estado "firmado_adjunto"
+            $licencia->update([
+                'signature_status' => 'firmado_adjunto',
+                'pdf_adjunto_firmado_path' => $path,
+                'firmado_adjunto_at' => now(),
+                'signed_by_user_id' => auth()->id(),
+                'signed_at' => now(),
+            ]);
+
+            \Log::info('PDF adjunto firmado cargado', [
+                'licencia_id' => $licencia->id,
+                'user_id' => auth()->id(),
+                'path' => $path,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'PDF firmado adjuntado exitosamente. Estado: Firmado Adjunto',
+                'downloadUrl' => Storage::disk('public')->url($path),
+                'signature_status' => 'firmado_adjunto',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al adjuntar PDF firmado', [
+                'licencia_id' => $licencia->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'error' => 'Error al adjuntar el PDF: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Descarga el PDF firmado (sea mediante firma digital o adjunto)
      */
     public function descargar(Licencia $licencia)
     {
         // Verificar permisos
         $this->authorize('view', $licencia);
 
-        if (!$licencia->pdf_firmado_path || !Storage::disk('public')->exists($licencia->pdf_firmado_path)) {
+        // Priorizar PDF adjunto si existe
+        $pdfPath = $licencia->pdf_adjunto_firmado_path ?? $licencia->pdf_firmado_path;
+        
+        if (!$pdfPath || !Storage::disk('public')->exists($pdfPath)) {
             return response()->json(['error' => 'PDF firmado no encontrado'], 404);
         }
 
         return Storage::disk('public')->download(
-            $licencia->pdf_firmado_path,
+            $pdfPath,
             "licencia_{$licencia->numero_licencia}_firmada.pdf"
         );
     }
