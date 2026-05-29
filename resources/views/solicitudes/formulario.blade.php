@@ -1152,8 +1152,8 @@ function elegirNegocio(nombreNegocio, anexo, riesgo, nicho = '') {
     nichoSeleccionado = nicho; // Guardar el ID del nicho
     document.getElementById('tipo_certificado_hidden').value = anexo;
     // Pre-llenar el campo actividad con el tipo elegido
-    document.getElementById('actividad_neg').value = nombreNegocio;
-    
+    //MAYUSCULAS
+document.getElementById('actividad_neg').value = nombreNegocio.toUpperCase();     
     // Establece el monto según el anexo seleccionado
     const monto = tipoCertificado === 'anexo_14' ? PRECIOS.anexo_14 : PRECIOS.anexo_13;
     document.getElementById('monto_pago_hidden').value = monto;
@@ -1418,6 +1418,15 @@ function validarYContinuar() {
 
 // ===== BÚSQUEDA DNI/RUC =====
 let nombreYaRelleno = false; // Flag para evitar doble relleno
+
+// ===== AUTO-BÚSQUEDA BUSCAR AL COMPLETAR DNI/RUC =====
+document.getElementById('dni_ruc').addEventListener('input', function() {
+    const valor = this.value.trim();
+    // Disparar búsqueda automática cuando tenga 8 (DNI) u 11 (RUC) dígitos
+    if (valor.length === 8 || valor.length === 11) {
+        document.getElementById('btnVerificar').click();
+    }
+});
 
 document.getElementById('btnVerificar').addEventListener('click', async function() {
     const dniRuc = document.getElementById('dni_ruc').value.trim();
@@ -1782,6 +1791,33 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 });
+
+// ===== AUTO-MAYÚSCULAS mayusculas EN CAMPOS DE TEXTO =====
+const camposMayusculas = [
+    'nombre_evento',
+    'fecha_evento',
+    'nombre_comercial_ev',
+    'direccion_ev',
+    'organizador_nombre',
+    'nombres_solicitante',
+    'nombre_comercial_neg',
+    'direccion_neg',
+    'provincia_neg',
+    'departamento_neg',
+    'actividad_neg'
+];
+
+camposMayusculas.forEach(id => {
+    const campo = document.getElementById(id);
+    if (campo) {
+        campo.addEventListener('input', function() {
+            const pos = this.selectionStart; // Guardar posición del cursor
+            this.value = this.value.toUpperCase();
+            this.setSelectionRange(pos, pos); // Restaurar posición del cursor
+        });
+    }
+});
+
 
 function limpiarArchivo(fieldName) {
     const fileInput = document.querySelector(`input[name="${fieldName}"]`);
